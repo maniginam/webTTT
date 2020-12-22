@@ -1,0 +1,2 @@
+{:server "java -cp /Users/maniginam/server/target/Server-1.0-SNAPSHOT.jar httpServer/Server"
+ :ttt "java -cp /Users/maniginam/TicTacToe/target/TicTacToe-1.0-SNAPSHOT.jar /main.clj"}
