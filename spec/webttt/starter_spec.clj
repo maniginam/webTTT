@@ -30,7 +30,7 @@
             output (:out ttt)
             exit (:exit ttt)]
         (should= 0 exit)
-        (should-contain (str "Welcome to TicTacToe!") output)
+        (should-contain (str "Welcome to Tic-Tac-Toe!") output)
         (should-contain (str "How many humans are playing?") output)
         )
       ))

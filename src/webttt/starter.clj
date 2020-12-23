@@ -13,8 +13,6 @@
     (apply shell/sh (concat (str/split config #" ") options)))
 
 (defn start-ttt [config & options]
-  (println "options: " options)
-  (println "cmd: " config)
   (apply shell/sh (concat (str/split config #" ") options)))
 
 (defn -main [& options]
