@@ -1,2 +1,2 @@
-# webttt
+# server-spec
 # webTTT
