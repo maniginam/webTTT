@@ -11,11 +11,10 @@
 (defn connect [port]
 	(assert (nil? @server-atom) "server already running")
 	(let [router (new Router)
-				builder (new HttpResponseBuilder)
-				factory (new HttpConnectionFactory router builder)
+				factory (new HttpConnectionFactory router)
 				host ^:host (new SocketHost port factory)
-				server {:host host :router router :builder builder}]
-		(Server/registerResponders router builder (.getCanonicalPath (io/file "./testroot")))
+				server {:host host :router router}]
+		(Server/registerResponders router (.getCanonicalPath (io/file "./testroot")))
 		(reset! server-atom server)
 		(.start host)
 		(reset! socket-atom (new Socket "localhost" port))))

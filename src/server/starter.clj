@@ -1,28 +1,45 @@
 (ns server.starter
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.java.shell :as shell])
-  (:import (httpServer Server)))
+            [clojure.java.shell :as shell]
+            [responders.ttt-responder :as ttt-responder])
+  (:import (httpServer Server HttpResponseBuilder HttpConnectionFactory)
+           (server Router SocketHost Responder)
+           (java.net Socket)))
 
-(defn config []
-  (let [file (str (.getCanonicalPath (io/file ".")) "/config.edn")
-      config (read-string (slurp file))]
-    config
-  ))
+(def server-atom (atom nil))
+(def socket-atom (atom nil))
+
+;(deftype Foo []
+;  Responder
+;  (respond [this request builder] "hello"))
 
 (defn start-server [port root]
-  (Server/main (into-array ["-p" "3141" "-r" "testroot"]))
-  (let [serverMap (Server/getServerMap)]
-    serverMap))
-    ;(apply shell/sh (concat (str/split config #" ") options)))
+  (let [router (new Router)
+        factory (new HttpConnectionFactory router)
+        host (new SocketHost port factory)
+        server {:host host :router router}
+        ttt-regex #"ttt"
+        ttt-responder (ttt-responder/->TTTRespond root {:method "GET" :resource "/ttt" :root root :server-name Server/serverName})]
+    (Server/registerResponders router (.getCanonicalPath (io/file (str "./" root))))
+    (.registerResponder router "GET" ttt-regex ttt-responder)
+    (reset! server-atom server)
+    (.start host)
+    ;(Thread/sleep 1000)
+    (reset! socket-atom (new Socket "localhost" port))))
+
+(defn stop []
+  (assert @server-atom "no server running")
+  (.stop (:host @server-atom))
+  (.close @socket-atom)
+  (reset! server-atom nil)
+  (reset! socket-atom nil))
 
 (defn start-ttt [config & options]
   (apply shell/sh (concat (str/split config #" ") options)))
 
-;(defn -main [& options]
-;  (let [config (config)
-;        serverOpts (remove #(or (= "terminal" %) (= "gui" %)) options)
-;        tttOpts (filter #(or (= "terminal" %) (= "gui" %)) options)]
-;  (start-server (:server config) serverOpts)
-;  (start-ttt (:ttt config) tttOpts)))
+(defn -main [& options]
+  (let [serverOpts (remove #(or (= "terminal" %) (= "gui" %)) options)
+        tttOpts (filter #(or (= "terminal" %) (= "gui" %)) options)]
+  (start-server 1234 serverOpts)))
 

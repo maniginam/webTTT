@@ -4,30 +4,20 @@
 						[clj-http.client :as client]
 						[clojure.java.io :as io]
 						[server.spec-helper :as helper])
-	(:import (java.net Socket)
-					 (java.io BufferedInputStream BufferedReader InputStreamReader)
-					 (server SocketHost Router)
-					 (httpServer HttpConnectionFactory HttpResponseBuilder Server)))
+	(:import (httpServer HttpConnectionFactory HttpResponseBuilder Server)))
 
 (describe "Connection to Server"
-	(before-all (helper/connect 3141))
-	(after-all (helper/stop))
+	(before-all (starter/start-server 3141 "testroot"))
+	(after-all (starter/stop))
 
-	(context "responds with ttt home"
-		(it "with blank request"
-			(let [target (slurp (.getCanonicalPath (io/file "./testroot/index.html")))
-						response (client/get "http://localhost:3141")]
-				(should-contain target, (:body response))))
+	(it "responds with ttt index.html with blank request"
+		(let [target (slurp (.getCanonicalPath (io/file "./testroot/index.html")))
+					response (client/get "http://localhost:3141")]
+			(should-contain target, (:body response))))
 
-	(it "sends /ttt request"
-		(let [request "GET HTTP/1.1"])
-		))
+	(it "responds with ttt index.html with /ttt request"
+		(let [target (slurp (.getCanonicalPath (io/file "./testroot/index.html")))
+					response (client/get "http://localhost:3141/ttt")]
+			(should-contain target, (:body response))))
 
-
-	(context "Connection to TicTacToe"
-		(it "starts tictactoe"
-			(let [request "GET /ttt HTTP/1.1"]
-				)
-			)
-		)
 	)
