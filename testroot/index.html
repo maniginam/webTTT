@@ -1,1 +1,37 @@
+<html>
+<head>
+    <style>
+h1 {text-align: center;}
+p {text-align: center;}
+div {text-align: center;}
+form {text-align: justified;}
+h2 {text-align: center;}
+</style>
+</head>
+
+<body style="background-color:rgba(100, 50, 255,0.25);">
+<br>
 <h1>Welcome to Tic Tac Toe</h1>
+<br>
+<h2>Players</h2>
+<div>
+<form method="get" action="/ttt/form">
+    <input type="radio" name="hvh"/>
+    <label>Human VS Human</label>
+    <br>
+    <input type="radio" name="hvc"/>
+    <label>Human VS Computer</label>
+    <br>
+    <input type="radio" name="cvc"/>
+    <label>Computer VS Computer</label>
+    <br>
+    <br>
+<h2>Board Size</h2>
+    <label>Board Size:</label>
+    <input type="text" name="bsize"/>
+    <input type="button" value="OK"/>
+</form>
+</div>
+</body>
+
+</html>
