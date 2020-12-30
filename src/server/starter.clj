@@ -3,7 +3,8 @@
 						[clojure.string :as str]
 						[clojure.java.shell :as shell]
 						[responders.ttt-responder :as ttt-responder]
-						[responders.ttt-form-responder :as form-responder])
+						[responders.setup-responder :as form-responder]
+						[game.game-manager :as manager])
 	(:import (httpServer Server HttpConnectionFactory)
 					 (server Router SocketHost)
 					 (java.net Socket)))
@@ -22,14 +23,9 @@
 (defn register-responders [router root]
 	(Server/registerResponders router (.getCanonicalPath (io/file (str "./" root))))
 	(let [server-map {:router router :root root :server-name server-name}
-				ttt-map {:console @console}
 				ttt-regex #"/ttt"
-				;ttt-form-regex #"/ttt/form?"
-				ttt-responder (ttt-responder/->TTTResponder server-map ttt-map)]
-				;ttt-form-responder (form-responder/->TTTFormResponder root server-name)]
-		(.registerResponder router "GET" ttt-regex ttt-responder)
-		;(.registerResponder router "GET" ttt-form-regex ttt-responder)
-		))
+				ttt-responder (ttt-responder/->TTTResponder server-map)]
+		(.registerResponder router "GET" ttt-regex ttt-responder)))
 
 (defn start-server [port root]
 	(let [router (new Router)
@@ -67,6 +63,7 @@
 					(println "(:root opts): " (:root opts))
 					(reset! root (:root opts))
 					(reset! port (:port opts))
-					(reset! console (:console (keyword opts)))
+					(reset! console (keyword (:console opts)))
+					(swap! assoc manager/game :console (keyword (:console opts)))
 					(start-server @port @root)))
 

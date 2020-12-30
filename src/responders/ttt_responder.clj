@@ -1,12 +1,19 @@
 (ns responders.ttt-responder
 	(:require [clojure.java.io :as io]
-						[responders.map-expander :as expander]
-						[responders.core :as rcore]
-						[responders.ttt-form-responder :as form-responder]
-						[clojure.string :as str])
+						[clojure.string :as str]
+						[responders.core :as rcore])
 	(:import (server Responder)
 					 (httpServer HttpResponseBuilder))
 	)
+
+(defn expand-java-map [request]
+	(loop [keys (.keySet request)
+				 key (first keys)
+				 requestMap {}]
+		(if (empty? keys)
+			requestMap
+			(let [requestMap (assoc requestMap (keyword key) (.get request key))]
+				(recur (rest keys) (first (drop 1 keys)) requestMap)))))
 
 (defn build-response-map [request]
 	(let [crude-resource (:resource request)
@@ -27,15 +34,14 @@
 		)
 	)
 
-(deftype TTTResponder [server-map ttt-map]
+(deftype TTTResponder [server-map]
 	Responder
 	(respond [this request]
 		(let [builder (new HttpResponseBuilder)
 					root (:root server-map)
-					requestMap (expander/expand-java-map request)
+					requestMap (expand-java-map request)
 					mapResource (:resource requestMap)
 					response (build-response-map (assoc requestMap :root root :server-name (:server-name server-map)))]
-			(println "response: " response)
 			(if (nil? response)
 				(.buildResponse builder (build-response-map (assoc requestMap :resource "/index.html" :root root :server-name (:server-name server-map))))
 				(.buildResponse builder response)))))
