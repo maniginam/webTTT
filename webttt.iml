@@ -47,5 +47,8 @@
     <orderEntry type="library" name="Leiningen: trptcolin/versioneer:0.1.1" level="project" />
     <orderEntry type="library" name="Leiningen: clj-http:3.10.1" level="project" />
     <orderEntry type="library" name="tic-tac-toe-1.0.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Leiningen: quil/processing-core:3.5.3" level="project" />
+    <orderEntry type="library" name="Leiningen: quil/processing-dxf:3.5.3" level="project" />
+    <orderEntry type="library" name="Leiningen: quil/processing-pdf:3.5.3" level="project" />
   </component>
 </module>

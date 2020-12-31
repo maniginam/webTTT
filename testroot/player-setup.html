@@ -6,6 +6,7 @@ p {text-align: center;}
 div {text-align: center;}
 form {text-align: justified;}
 h2 {text-align: center;}
+h3 {text-align: center;}
 </style>
 </head>
 
@@ -14,14 +15,17 @@ h2 {text-align: center;}
 <h1>Tic Tac Toe</h1>
 <br>
 <h2>Select Your Game Piece</h2>
+<h3>X goes first!</h3>
 <div>
 <form method="get" action="/ttt/form">
     <input type="radio" id="X" name="piece" value="X"/>
     <label>X</label>
     <br>
     <input type="radio" id="O" name="piece" value="O"/>
-    <label>Or</label>
-    <input type="submit" value="OK"/>
+    <label>O</label>
+    <br>
+    <br>
+    <input type="submit" value="Set Game Pieces"/>
     <br>
 </form>
 </div>

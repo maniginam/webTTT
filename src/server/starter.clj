@@ -64,6 +64,6 @@
 					(reset! root (:root opts))
 					(reset! port (:port opts))
 					(reset! console (keyword (:console opts)))
-					(swap! assoc manager/game :console (keyword (:console opts)))
+					(swap! manager/game assoc :console @console)
 					(start-server @port @root)))
 

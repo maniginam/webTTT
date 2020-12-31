@@ -10,7 +10,7 @@
 	(let [target (str (first (:target request)))
 				entries (str/split (second (str/split target #"\?")) #"&")
 				entriesMap (into {} (map #(assoc {} (keyword (first %)) (second %)) (map #(str/split % #"=") entries)))]
-				(manager/manage-game entriesMap)))
+		(manager/manage-game entriesMap)))
 
 (defmethod rcore/respond :form? [request]
 	(extract-game request)

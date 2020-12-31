@@ -6,7 +6,8 @@
 						[game.game-manager :as manager]
 						))
 
-(def default-game {:status         :waiting
+(def default-game {:console :gui
+									 :status         :waiting
 									 :persistence    {:db :mysql :dbname "mysql" :table "ttt"}
 									 :users          nil
 									 :board-size     3
@@ -15,12 +16,13 @@
 									 :player2        {:player-num 2 :piece "O" :type nil}})
 
 (describe "Home Screen Form"
-	(before-all (starter/start-server 3141 "testroot"))
-	(after-all (starter/stop) (Thread/sleep 1000))
+	(before-all (Thread/sleep 1000) (starter/start-server 3141 "testroot"))
+	(after-all (starter/stop) (Thread/sleep 5000))
 
 	(context "sets user-count"
+
 		(it "0 humans"
-			(reset! manager/game default-game)
+			(swap! manager/game assoc :status :waiting)
 			(let [target (slurp (.getCanonicalPath (io/file "./testroot/level-setup.html")))
 						response (client/get "http://localhost:3141/ttt/form?users=0")]
 				(should= 0 (:users @manager/game))
@@ -28,7 +30,7 @@
 				(should-contain target (:body response))))
 
 		(it "1 humans"
-			(reset! manager/game default-game)
+			(swap! manager/game assoc :status :waiting)
 			(let [target (slurp (.getCanonicalPath (io/file "./testroot/player-setup.html")))
 						response (client/get "http://localhost:3141/ttt/form?users=1")]
 				(should= 1 (:users @manager/game))
@@ -36,7 +38,7 @@
 				(should-contain target (:body response))))
 
 		(it "2 humans"
-			(reset! manager/game default-game)
+			(swap! manager/game assoc :status :waiting)
 			(let [target (slurp (.getCanonicalPath (io/file "./testroot/board-setup.html")))
 						response (client/get "http://localhost:3141/ttt/form?users=2")]
 				(should= 2 (:users @manager/game))
@@ -46,11 +48,32 @@
 	(context "sets players"
 
 		(it "human is X"
-			(reset! manager/game default-game)
 			(swap! manager/game assoc :users 1 :status :player-setup)
 			(let [target (slurp (.getCanonicalPath (io/file "./testroot/level-setup.html")))
 						response (client/get "http://localhost:3141/ttt/form?player=X")]
-				(should= "X" (get :piece  (:player-1 @manager/game)))
-				(should-contain starter/server-name (get (:headers response) "Server"))
+				(should= :human (get (:player1 @manager/game) :type))
+				(should= :computer (get (:player2 @manager/game) :type))
+				(should-contain target (:body response))))
+
+		(it "human is O"
+			(swap! manager/game assoc :users 1 :status :player-setup)
+			(let [target (slurp (.getCanonicalPath (io/file "./testroot/level-setup.html")))
+						response (client/get "http://localhost:3141/ttt/form?player=O")]
+				(should= :human (get (:player2 @manager/game) :type))
+				(should= :computer (get (:player1 @manager/game) :type))
 				(should-contain target (:body response)))))
+
+	(it "sets level"
+		(swap! manager/game assoc :status :level-setup)
+		(let [target (slurp (.getCanonicalPath (io/file "./testroot/board-setup.html")))
+					response (client/get "http://localhost:3141/ttt/form?level=easy")]
+			(should= :easy (get @manager/game :level))
+			(should-contain target (:body response))))
+
+	(it "sets board"
+		(swap! manager/game assoc :console :gui :status :board-setup :users 0 :level :easy :player1 {:piece "X" :type :computer :player-num 1} :player2 {:piece "O" :type :computer :player-num 2})
+		(let [target (slurp (.getCanonicalPath (io/file "./testroot/level-setup.html")))
+					response (client/get "http://localhost:3141/ttt/form?board-size=2")]
+			(should= [0 1 2 3] (get @manager/game :board))
+			(should-contain target (:body response))))
 	)
