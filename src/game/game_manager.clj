@@ -1,7 +1,7 @@
 (ns game.game-manager
 	(:require [master.core :as tcore]
 						[ttt.board :as board]
-						;[gui.gui]
+		;[gui.gui]
 						[ttt.terminal]
 						[master.game-master]))
 
@@ -28,24 +28,24 @@
 (defmethod tcore/set-parameters :board-setup [game-without-board]
 	(let [board-size (:board-size game-without-board)
 				board (board/create-board board-size)]
-		(swap! game assoc :board board :status :ready-to-play)))
+		(swap! game assoc :board board :status :playing)))
 
 (defn manage-game [entries]
-	(doseq [entry entries]
-		(let [key (key entry)
-					val (try (Integer/parseInt (val entry))
-									 (catch Exception e
-										 (if (= :player key)
-											 (val entry)
-											 (keyword (val entry)))))]
-			(cond (= val "X") (do (swap! game assoc :player1 (assoc (:player1 @game) :type :human))
-														(swap! game assoc :player2 (assoc (:player2 @game) :type :computer)))
-						(= val "O") (do (swap! game assoc :player1 (assoc (:player1 @game) :type :computer))
-														(swap! game assoc :player2 (assoc (:player2 @game) :type :human)))
-						:else (swap! game assoc key val)))
-		(tcore/set-parameters @game)
-		(println "game: " @game)
-		(if (= :ready-to-play (:status @game))
-			(tcore/run-game @game))))
+		(doseq [entry entries]
+			(let [key (key entry)
+						val (try (Integer/parseInt (val entry))
+										 (catch Exception e
+											 (if (= :player key)
+												 (val entry)
+												 (keyword (val entry)))))]
+				(cond (= val "X") (do (swap! game assoc :player1 (assoc (:player1 @game) :type :human))
+															(swap! game assoc :player2 (assoc (:player2 @game) :type :computer)))
+							(= val "O") (do (swap! game assoc :player1 (assoc (:player1 @game) :type :computer))
+															(swap! game assoc :player2 (assoc (:player2 @game) :type :human)))
+							:else (swap! game assoc key val)))
+			(tcore/set-parameters @game)
+			;(if (= :ready-to-play (:status @game))
+			;	(tcore/run-game @game))
+			))
 
 

@@ -39,7 +39,8 @@
 
 (defn stop []
 	(assert @server-atom "no server running")
-	(.stop (:host @server-atom))
+	(let [host (:host @server-atom)]
+		(.end host))
 	(.close @socket-atom)
 	(reset! server-atom nil)
 	(reset! socket-atom nil))

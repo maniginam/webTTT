@@ -29,8 +29,9 @@
 											"body"           (.getBytes body)
 											"Content-Length" size}]
 				response)
-			(let [target (rest split-resource)]
-				(rcore/respond (assoc request :responder :form? :target target))))
+			(let [target (rest split-resource)
+						type (keyword (first (str/split (first target) #"\?")))]
+				(rcore/respond (assoc request :responder type :target target))))
 		)
 	)
 
