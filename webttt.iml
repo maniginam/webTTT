@@ -14,7 +14,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library" exported="">
+    <orderEntry type="module-library">
       <library name="ginaServer">
         <CLASSES>
           <root url="jar://$USER_HOME$/server/target/server-1.0-SNAPSHOT.jar!/" />
@@ -50,5 +50,6 @@
     <orderEntry type="library" name="Leiningen: quil/processing-core:3.5.3" level="project" />
     <orderEntry type="library" name="Leiningen: quil/processing-dxf:3.5.3" level="project" />
     <orderEntry type="library" name="Leiningen: quil/processing-pdf:3.5.3" level="project" />
+    <orderEntry type="library" name="Leiningen: quil:3.1.0" level="application" />
   </component>
 </module>

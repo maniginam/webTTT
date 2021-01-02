@@ -1,7 +1,8 @@
 (ns responders.ttt-responder
 	(:require [clojure.java.io :as io]
 						[clojure.string :as str]
-						[responders.core :as rcore])
+						[responders.core :as rcore]
+						[responders.play-responder :as play])
 	(:import (server Responder)
 					 (httpServer HttpResponseBuilder))
 	)
