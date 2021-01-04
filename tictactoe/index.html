@@ -59,8 +59,10 @@
 <body>
 <div class="container">
     <h2>Let's Play!</h2>
-        <img class="responsive" src="/frame.jpeg" alt="ttt">
-        <input class="start" type="button" formaction="/ttt/setup">Start</input>
+        <img class="responsive" src="/frame.jpeg" alt="ttt" usemap="#tttmap">
+        <map name="tttmap">
+            <area shape="rect" coords="140, 580, 780, 800" href="/ttt/playing">
+        </map>
 </div>
 
 </body>
