@@ -12,7 +12,7 @@
 (def server-atom (atom nil))
 (def socket-atom (atom nil))
 (def server-name (Server/serverName))
-(def root (atom "testroot"))
+(def root (atom "tictactoe"))
 (def port (atom 1234))
 (def console (atom :gui))
 
@@ -60,8 +60,8 @@
 
 			(defn -main [& options]
 				(let [opts (split-options options)]
-					(println "(:port opts): " (:port opts))
-					(println "(:root opts): " (:root opts))
+					(println "Running on port " (:port opts))
+					(println "Serving from: " (:root opts))
 					(reset! root (:root opts))
 					(reset! port (:port opts))
 					(reset! console (keyword (:console opts)))

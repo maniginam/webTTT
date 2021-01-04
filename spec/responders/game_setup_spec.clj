@@ -6,22 +6,25 @@
 						[clojure.java.io :as io]))
 
 (describe "Home Screen Form"
-	(before-all (starter/start-server 1003 "testroot"))
+	(before-all (starter/start-server 1003 "tictactoe"))
 	(after-all (if (> 0 (Thread/activeCount)) (starter/stop)))
 
 	(context "sets user-count"
 
 		(it "0 humans"
 			(swap! manager/game assoc :status :waiting)
-			(let [target (slurp (.getCanonicalPath (io/file "./testroot/level-setup.html")))
+			(let [root (.getCanonicalPath (io/file "./tictactoe"))
+						target (slurp (str root "/level-setup.html"))
+						path (str root "/frame.jpeg")
 						response (client/get "http://localhost:1003/ttt/setup?users=0")]
 				(should= 0 (:users @manager/game))
+				(should= path (:frame-path @manager/game))
 				(should-contain starter/server-name (get (:headers response) "Server"))
 				(should-contain target (:body response))))
 
 		(it "1 humans"
 			(swap! manager/game assoc :status :waiting)
-			(let [target (slurp (.getCanonicalPath (io/file "./testroot/player-setup.html")))
+			(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/player-setup.html")))
 						response (client/get "http://localhost:1003/ttt/setup?users=1")]
 				(should= 1 (:users @manager/game))
 				(should-contain starter/server-name (get (:headers response) "Server"))
@@ -29,7 +32,7 @@
 
 		(it "2 humans"
 			(swap! manager/game assoc :status :waiting)
-			(let [target (slurp (.getCanonicalPath (io/file "./testroot/board-setup.html")))
+			(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/board-setup.html")))
 						response (client/get "http://localhost:1003/ttt/setup?users=2")]
 				(should= 2 (:users @manager/game))
 				(should-contain starter/server-name (get (:headers response) "Server"))
@@ -40,7 +43,7 @@
 
 		(it "human is X"
 			(swap! manager/game assoc :users 1 :status :player-setup)
-			(let [target (slurp (.getCanonicalPath (io/file "./testroot/level-setup.html")))
+			(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/level-setup.html")))
 						response (client/get "http://localhost:1003/ttt/setup?player=X")]
 				(should= :human (get (:player1 @manager/game) :type))
 				(should= :computer (get (:player2 @manager/game) :type))
@@ -48,7 +51,7 @@
 
 		(it "human is O"
 			(swap! manager/game assoc :users 1 :status :player-setup)
-			(let [target (slurp (.getCanonicalPath (io/file "./testroot/level-setup.html")))
+			(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/level-setup.html")))
 						response (client/get "http://localhost:1003/ttt/setup?player=O")]
 				(should= :human (get (:player2 @manager/game) :type))
 				(should= :computer (get (:player1 @manager/game) :type))
@@ -57,14 +60,14 @@
 
 	(it "sets level"
 		(swap! manager/game assoc :status :level-setup)
-		(let [target (slurp (.getCanonicalPath (io/file "./testroot/board-setup.html")))
+		(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/board-setup.html")))
 					response (client/get "http://localhost:1003/ttt/setup?level=easy")]
 			(should= :easy (get @manager/game :level))
 			(should-contain target (:body response))))
 
 	(it "sets board"
 		(swap! manager/game assoc :console :gui :status :board-setup :users 0 :level :easy :player1 {:piece "X" :type :computer :player-num 1} :player2 {:piece "O" :type :computer :player-num 2})
-		(let [target (slurp (.getCanonicalPath (io/file "./testroot/ttt.html")))
+		(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/ttt.html")))
 					response (client/get "http://localhost:1003/ttt/setup?board-size=2")]
 			(should= :playing (get @manager/game :status))
 			(should= [0 1 2 3] (get @manager/game :board))

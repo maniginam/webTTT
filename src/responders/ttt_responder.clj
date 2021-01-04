@@ -16,24 +16,39 @@
 			(let [requestMap (assoc requestMap (keyword key) (.get request key))]
 				(recur (rest keys) (first (drop 1 keys)) requestMap)))))
 
+(defn respond-with-home-page [request]
+	(println "not getting here")
+	(let [resource "/index.html"
+				body (slurp (str (:root request) resource))
+				size (count body)
+				response {"Server"         (:server-name request)
+									"statusCode"     (int 200)
+									"Content-Type"   "text/html"
+									"body"           (.getBytes body)
+									"Content-Length" size}]
+		response))
+
 (defn build-response-map [request]
-	(let [crude-resource (:resource request)
-				split-resource (remove empty? (str/split crude-resource #"/"))]
-		(if (= 1 (count split-resource))
-			(let [resource "/index.html"
-						root (.getCanonicalPath (io/file (str "./" (:root request) resource)))
-						body (slurp root)
-						size (count body)
-						response {"Server"         (:server-name request)
-											"statusCode"     (int 200)
-											"Content-Type"   "text/html"
-											"body"           (.getBytes body)
-											"Content-Length" size}]
-				response)
-			(let [target (rest split-resource)
-						type (keyword (first (str/split (first target) #"\?")))]
-				(rcore/respond (assoc request :responder type :target target))))
-		)
+	(let [resource "/index.html"
+				body (slurp (str (:root request) resource))
+				size (count body)
+				response {"Server"         (:server-name request)
+									"statusCode"     (int 200)
+									"Content-Type"   "text/html"
+									"body"           (.getBytes body)
+									"Content-Length" size}]
+		(println "size: " size)
+		response)
+	;(let [crude-resource (:resource request)
+	;			split-resource (remove empty? (str/split crude-resource #"/"))
+	;			root (.getCanonicalPath (io/file (str "./" (:root request))))
+	;			request (assoc request :root root)]
+	;	(if (= 1 (count split-resource))
+	;		(respond-with-home-page request)
+	;		(let [target (rest split-resource)
+	;					type (keyword (first (str/split (first target) #"\?")))]
+	;			(rcore/respond (assoc request :responder type :target target))))
+	;	)
 	)
 
 (deftype TTTResponder [server-map]
@@ -45,5 +60,5 @@
 					mapResource (:resource requestMap)
 					response (build-response-map (assoc requestMap :root root :server-name (:server-name server-map)))]
 			(if (nil? response)
-				(.buildResponse builder (build-response-map (assoc requestMap :resource "/index.html" :root root :server-name (:server-name server-map))))
+				(.buildResponse builder (build-response-map (assoc requestMap :root root :server-name (:server-name server-map))))
 				(.buildResponse builder response)))))
