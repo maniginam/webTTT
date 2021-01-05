@@ -1,70 +1,16 @@
+<!DOCTYPE html>
 <html>
-
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        * {
-            margin: 0;
-            padding: 10;
-        }
-
-        body {
-            background-color:rgba(100, 50, 255,0.25);
-            height: auto;
-            width: auto;
-            overflow-y: hidden;
-            overflow-x: hidden;
-        }
-        h1 {text-align: center;}
-        p {text-align: center;}
-        div {text-align: center;}
-        form {text-align: justified;}
-        h2 {text-align: center;}
-
-        .responsive {
-             width: auto;
-            height: 80%;
-        }
-    .container {
-    }
-    .container img {
-        width: auto;
-        height: 80%;
-    }
-
-    .container .start {
-        position: absolute;
-        top: 89%;
-        left: 34%;
-        transform: translate (-50%, -50%);
-        -ms-transform: translate(-50%, -50%);
-        background-color: #555;
-        color: white;
-        font-size: 16px;
-        padding: 12px 24px;
-        border: none;
-        cursor: pointer;
-        border-radius: 5px;
-        text-align: center;
-    }
-
-    .container .start:hover {
-        background-color: black;
-    }
-
-    </style>
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0">
+    <title>"Tic Tac Toe"</title>
+    <link rel="stylesheet" type="text/css" href="/html/css/main.css">
 </head>
 
-<h1>Welcome to Tic Tac Toe</h1>
 <body>
-<div class="container">
-    <h2>Let's Play!</h2>
-        <img class="responsive" src="/frame.jpeg" alt="ttt" usemap="#tttmap">
-        <map name="tttmap">
-            <area shape="rect" coords="140, 580, 780, 800" href="/ttt/playing">
-        </map>
-</div>
-
+<h1>Welcome to Tic Tac Toe</h1>
+<form action="/ttt/setup" method="get">
+    <button type="submit" formaction="/ttt/setup" formmethod="get">Let's Play!</button>
+</form>
 </body>
 </html>
 

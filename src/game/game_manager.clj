@@ -1,8 +1,6 @@
 (ns game.game-manager
-	(:require [gui.gui :as gui]
-						[master.game-master :as game]
+	(:require [master.game-master :as game]
 						[ttt.board :as board]
-						[ttt.terminal]
 						[master.core :as tcore]))
 
 (def game (atom {:status         :waiting
@@ -10,10 +8,13 @@
 								 :users          nil
 								 :board-size     3
 								 :current-player :player1
-								 :player1        {:player-num 1 :piece "X" :type nil}
-								 :player2        {:player-num 2 :piece "O" :type nil}}))
+								 :player1        {:player-num 1 :piece "X" :type :computer}
+								 :player2        {:player-num 2 :piece "O" :type :computer}}))
 
-(defmethod tcore/set-parameters :waiting [waiting-game]
+(defmethod tcore/set-parameters :waiting [not-setup-game]
+	(swap! game assoc :status :user-setup))
+
+(defmethod tcore/set-parameters :user-setup [waiting-game]
 	(let [status (cond (zero? (:users @game)) :level-setup
 										 (= 1 (:users @game)) :player-setup
 										 (= 2 (:users @game)) :board-setup)]
@@ -31,9 +32,8 @@
 		(swap! game assoc :board board :status :ready-to-play)))
 
 (defn manage-game [request entries]
-	(println "(:status @game): " (:status @game))
-	(if (nil? (:frame-path @game))
-		(swap! game assoc :frame-path (str (:root request) "/frame.jpeg")))
+	(when (= :waiting (:status @game))
+		(tcore/set-parameters @game))
 	(doseq [entry entries]
 		(let [key (key entry)
 					val (try (Integer/parseInt (val entry))
@@ -47,9 +47,9 @@
 														(swap! game assoc :player2 (assoc (:player2 @game) :type :human)))
 						:else (swap! game assoc key val)))
 		(tcore/set-parameters @game)
-		(if (= :ready-to-play (:status @game))
-			(game/update-state @game)
-			)
+		;(if (= :ready-to-play (:status @game))
+		;	(game/update-state @game)
+		;	)
 		))
 
 
