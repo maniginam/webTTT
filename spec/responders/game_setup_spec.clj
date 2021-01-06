@@ -45,7 +45,6 @@
 
 
 	(context "sets players"
-
 		(it "human is X"
 			(swap! manager/game assoc :users 1 :status :player-setup)
 			(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/level-setup.html")))
@@ -72,8 +71,8 @@
 
 	(it "sets board"
 		(swap! manager/game assoc :console :web :status :board-setup :users 0 :level :easy :player1 {:piece "X" :type :computer :player-num 1} :player2 {:piece "O" :type :computer :player-num 2})
-		(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/ttt.html")))
-					response (client/get "http://localhost:1003/ttt/setup?board-size=2")]
+		(let [response (client/get "http://localhost:1003/ttt/setup?board-size=2")
+					target (slurp (.getCanonicalPath (io/file "./tictactoe/ttt.html")))]
 			(should= :ready-to-play (get @manager/game :status))
 			(should= [0 1 2 3] (get @manager/game :board))
 			(should-contain target (:body response))))

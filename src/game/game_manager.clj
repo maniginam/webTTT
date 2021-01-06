@@ -3,7 +3,8 @@
 						[ttt.board :as board]
 						[master.core :as tcore]))
 
-(def game (atom {:status         :waiting
+(def game (atom {:console        :web
+								 :status         :waiting
 								 :persistence    {:db :mysql :dbname "mysql" :table "ttt"}
 								 :users          nil
 								 :board-size     3
@@ -47,9 +48,9 @@
 														(swap! game assoc :player2 (assoc (:player2 @game) :type :human)))
 						:else (swap! game assoc key val)))
 		(tcore/set-parameters @game)
-		;(if (= :ready-to-play (:status @game))
-		;	(game/update-state @game)
-		;	)
+		(if (= :ready-to-play (:status @game))
+			(master.game-master/update-state @game)
+			)
 		))
 
 

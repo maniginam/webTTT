@@ -28,7 +28,6 @@
 		response))
 
 (defn build-response-map [request]
-	(println "(:resource request): " (:resource request))
 	(let [crude-resource (:resource request)
 				split-resource (remove empty? (str/split crude-resource #"/"))]
 		(if (= 1 (count split-resource))

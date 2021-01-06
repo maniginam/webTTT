@@ -3,12 +3,12 @@
 						[game.game-manager :as manager]
 						[master.core :as tcore]
 						[master.game-master :as game]
-						))
+						[html.writer :as writer]))
 
 
 (defmethod responders.core/respond :playing [request]
 	(swap! manager/game assoc :status :playing)
-	(game/update-state @manager/game)
+	(reset! manager/game (game/update-state @manager/game))
 	(let [body (slurp (str (:root request) "/ttt.html"))
 				size (count body)
 				response {"Server"         (:server-name request)

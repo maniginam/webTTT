@@ -1,4 +1,5 @@
 body {
+    padding: 7%;
     background-color: rgba(100, 50, 255,0.25);
     height: auto;
     width: auto;
@@ -8,7 +9,7 @@ body {
 
 h1 {text-align: center;}
 h2 {text-align: center;}
-
+svg {padding: 0%}
 .ttt {
     text-align: center;
 }
