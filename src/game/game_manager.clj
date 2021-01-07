@@ -1,16 +1,18 @@
 (ns game.game-manager
 	(:require [master.game-master :as game]
 						[ttt.board :as board]
-						[master.core :as tcore]))
+						[master.core :as tcore]
+						[html.writer :as writer]))
 
-(def game (atom {:console        :web
-								 :status         :waiting
-								 :persistence    {:db :mysql :dbname "mysql" :table "ttt"}
-								 :users          nil
-								 :board-size     3
-								 :current-player :player1
-								 :player1        {:player-num 1 :piece "X" :type :computer}
-								 :player2        {:player-num 2 :piece "O" :type :computer}}))
+(def default-game {:console        :web
+									 :status         :waiting
+									 :users          nil
+									 :board-size     3
+									 :current-player :player1
+									 :player1        {:player-num 1 :piece "X" :type :computer}
+									 :player2        {:player-num 2 :piece "O" :type :computer}
+									 :persistence    {:db :mysql :dbname "mysql" :table "ttt"}})
+(def game (atom default-game))
 
 (defmethod tcore/set-parameters :waiting [not-setup-game]
 	(swap! game assoc :status :user-setup))
@@ -49,7 +51,8 @@
 						:else (swap! game assoc key val)))
 		(tcore/set-parameters @game)
 		(if (= :ready-to-play (:status @game))
-			(master.game-master/update-state @game)
+			(do (master.game-master/update-state @game)
+					(tcore/draw-state @game))
 			)
 		))
 

@@ -5,6 +5,10 @@
 (def head (str "<html>\n<head>\n<link rel=\"stylesheet\" type=\"text/css\" href=\"/html/css/main.css\">\n</head>\n"))
 (def body-start (str "<body>\n<h1>Tic Tac Toe</h1>\n"
 										 "<svg width=\"100%\" height=\"100%\">\n"))
+(def box-fill "blue")
+(def box-opacity "10%")
+(def marker-color "coral")
+
 
 (defn draw-board [game]
 	(let [board (:board game)
@@ -22,8 +26,8 @@
 													x-text 5
 													y-text 5
 													text (if (string? (nth board box)) (nth board box) "")
-													marker (cond (= "X" (nth board box)) {:x1 (+ x (* box-size 0.05)) :x2 (+ x (* box-size 0.95)) :y1 (+ y (* box-size 0.05)) :y2 (+ y (* box-size 0.95))}
-																			 (= "O" (nth board box)) {:center-x (/ (- box-size x) 2) :center-y (/ (- box-size y) 2) :r (* box-size 0.9)}
+													marker (cond (= "X" (nth board box)) {:x1 (+ x (* box-size 0.1)) :x2 (+ x (* box-size 0.90)) :y1 (+ y (* box-size 0.1)) :y2 (+ y (* box-size 0.90))}
+																			 (= "O" (nth board box)) {:center-x (+ (* box-size box) (/ (- box-size x) 2)) :center-y (/ (- box-size y) 2) :r (* box-size 0.9)}
 																			 :else "")
 													shape (cond (= "X" (nth board box)) (str "<line x1=\"" (:x1 marker) "\" y1=\"" (:y1 marker) "\" x2=\"\"" (:x2 marker) "\" y2=\"" (:y2 marker) "\" stroke=\"coral\" stroke-width=\"10\"/>\n"
 																																	 "<line x1=\"" (:x2 marker) "\" y1=\"" (:y1 marker) "\" x2=\"\"" (:x1 marker) "\" y2=\"" (:y2 marker) "\" stroke=\"coral\" stroke-width=\"10\"/>\n")
@@ -31,7 +35,7 @@
 																																	 :else nil)]]
 								(str "<a href=\"/ttt/playing/box=" box "\">\n"
 										 "<g>\n"
-										 "<rect x=\"" x "%\" y=\"" y "%\" width=\"" box-size "%\" height=\"" box-size "%\" fill=\"blue\" opacity=\"10%\"/>\n"
+										 "<rect x=\"" x "%\" y=\"" y "%\" width=\"" box-size "%\" height=\"" box-size "%\" fill=\""box-fill"\" opacity=\"10%\"/>\n"
 										 ;"<text x=\"" x-text "%\" y=\"" y-text "%\" font-size=\"30\" fill=\"coral\">" text "</text>\n"
 										 shape
 										 "</g>"
@@ -40,7 +44,6 @@
 
 
 (defn write [game]
-	(println "(:board game): " (:board game))
 	(let [context (str head body-start)
 				board (draw-board game)
 				close (str "</svg>\n</body>\n</html>")

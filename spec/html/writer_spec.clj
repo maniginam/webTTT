@@ -44,7 +44,7 @@
 				(should-contain "<line x1=\"5%\" y1=\"35%\" x2=\"95%\" y2=\"35%\" stroke=\"rgb(94, 94, 99)\" stroke-width=\"4\"/>", lines)
 				(should-contain "<rect x=\"35%\" y=\"35%\" width=\"30%\" height=\"30%\" fill=\"blue\" opacity=\"10%\"/>", lines)
 				(should-contain "<a href=\"/ttt/playing/box=4\">" lines)
-				(should-contain "<text x=\"5%\" y=\"5%\" font-size=\"30\" fill=\"coral\">X</text>" lines)
+				;(should-contain "<text x=\"5%\" y=\"5%\" font-size=\"30\" fill=\"coral\">X</text>" lines)
 				)
 			)
 		)
