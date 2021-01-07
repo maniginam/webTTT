@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Leiningen: maniginam/tic-tac-toe:1.0.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/maniginam/tic-tac-toe/1.0.0-SNAPSHOT/tic-tac-toe-1.0.0-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

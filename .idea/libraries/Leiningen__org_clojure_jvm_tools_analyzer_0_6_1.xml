@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="Leiningen: org.clojure/jvm.tools.analyzer:0.6.1">
-    <CLASSES>
-      <root url="jar://$MAVEN_REPOSITORY$/org/clojure/jvm.tools.analyzer/0.6.1/jvm.tools.analyzer-0.6.1.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

@@ -7,6 +7,9 @@
 					 (httpServer HttpResponseBuilder))
 	)
 
+(def file-map {:user-setup  "/user-setup.html" :player-setup "/player-setup.html" :level-setup "/level-setup.html"
+							 :board-setup "/board-setup.html" :ready-to-play "/ttt.html" :playing "/ttt.html" :game-over "/game-over.html"})
+
 (defn expand-java-map [request]
 	(loop [keys (.keySet request)
 				 key (first keys)

@@ -2,7 +2,8 @@
 	(:require [master.game-master :as game]
 						[ttt.board :as board]
 						[master.core :as tcore]
-						[html.writer :as writer]))
+						[html.game-writer :as writer]
+						[clojure.string :as str]))
 
 (def default-game {:console        :web
 									 :status         :waiting
@@ -17,10 +18,18 @@
 (defmethod tcore/set-parameters :waiting [not-setup-game]
 	(swap! game assoc :status :user-setup))
 
+
+
+(defn set-players [users]
+	(cond (zero? users) (swap! game assoc :player1 {:type :computer :piece "X" :player-num 1} :player2 {:type :computer :piece "O" :player-num 2})
+				(= 2 users) (swap! game assoc :player1 {:type :human :piece "X" :player-num 1} :player2 {:type :human :piece "O" :player-num 2})
+				:else nil))
+
 (defmethod tcore/set-parameters :user-setup [waiting-game]
 	(let [status (cond (zero? (:users @game)) :level-setup
 										 (= 1 (:users @game)) :player-setup
 										 (= 2 (:users @game)) :board-setup)]
+		(set-players (:users @game))
 		(swap! game assoc :status status)))
 
 (defmethod tcore/set-parameters :player-setup [not-setup-game]
@@ -35,8 +44,6 @@
 		(swap! game assoc :board board :status :ready-to-play)))
 
 (defn manage-game [request entries]
-	(when (= :waiting (:status @game))
-		(tcore/set-parameters @game))
 	(doseq [entry entries]
 		(let [key (key entry)
 					val (try (Integer/parseInt (val entry))
@@ -48,12 +55,19 @@
 														(swap! game assoc :player2 (assoc (:player2 @game) :type :computer)))
 						(= val "O") (do (swap! game assoc :player1 (assoc (:player1 @game) :type :computer))
 														(swap! game assoc :player2 (assoc (:player2 @game) :type :human)))
-						:else (swap! game assoc key val)))
-		(tcore/set-parameters @game)
-		(if (= :ready-to-play (:status @game))
-			(do (master.game-master/update-state @game)
-					(tcore/draw-state @game))
-			)
-		))
+						:else (swap! game assoc key val))))
+	(tcore/set-parameters @game)
+	(if (= :ready-to-play (:status @game))
+		(do (reset! game (game/update-state @game))
+			(tcore/draw-state @game)
+				;(while (and (not (game/game-over? @game)) (game/ai-turn? @game))
+				;	(reset! game (game/update-state @game)))
+				;(if (game/ai-turn? @game-atom)
+				;	(tcore/run-game @game-atom))
+				)
+		)
+	)
+
+
 
 

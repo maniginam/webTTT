@@ -3,10 +3,10 @@
 						[clojure.string :as str]
 						[game.game-manager :as manager]
 						[responders.core :as rcore]
-						[html.writer :as writer]))
+						[html.game-writer :as writer]))
 
 (def file-map {:user-setup  "/user-setup.html" :player-setup "/player-setup.html" :level-setup "/level-setup.html"
-							 :board-setup "/board-setup.html" :ready-to-play "/ttt.html" :playing "/ttt.html"})
+							 :board-setup "/board-setup.html" :ready-to-play "/ttt.html" :playing "/ttt.html" :game-over "/game-over.html"})
 
 (defn extract-game [request]
 	(let [target (str (first (:target request)))
@@ -23,12 +23,11 @@
 	(let [game @manager/game
 				body (slurp (str (:root request) (get file-map (:status game))))
 				size (count body)
-				response
-				{"Server"         (:server-name request)
-				 "statusCode"     (int 200)
-				 "Content-Type"   "text/html"
-				 "body"           (.getBytes body)
-				 "Content-Length" size}]
+				response {"Server"         (:server-name request)
+									"statusCode"     (int 200)
+									"Content-Type"   "text/html"
+									"body"           (.getBytes body)
+									"Content-Length" size}]
 		response))
 
 
