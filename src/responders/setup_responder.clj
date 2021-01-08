@@ -12,13 +12,15 @@
 	(let [target (str (first (:target request)))
 				entries (str/split (second (str/split target #"\?")) #"&")
 				entriesMap (into {} (map #(assoc {} (keyword (first %)) (second %)) (map #(str/split % #"=") entries)))]
-		(manager/manage-game entriesMap))
+		;(manager/manage-game entriesMap)
+		)
 	)
 
 (defmethod rcore/respond :setup [request]
-	(if (= :waiting (:status @manager/game))
-		(manager/manage-game nil)
-		(extract-game request))
+	;(if (= :waiting (:status @manager/game))
+		;(manager/manage-game nil)
+		(extract-game request)
+	;)
 	(let [game @manager/game
 				body (slurp (str (:root request) (get file-map (:status game))))
 				size (count body)
@@ -28,6 +30,7 @@
 									"body"           (.getBytes body)
 									"Content-Length" size}]
 		response))
+;)
 
 
 

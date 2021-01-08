@@ -2,7 +2,8 @@
 	(:require [speclj.core :refer :all]
 						[server.starter :as starter]
 						[clj-http.client :as client]
-						[clojure.java.io :as io]))
+						[clojure.java.io :as io]
+						[game.game-manager :as manager]))
 
 	(describe "Connection to Server"
 
@@ -26,6 +27,7 @@
 					(should= target, (:body response))))
 
 			(it "/ttt request"
+				(reset! manager/game manager/default-game)
 				(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/index.html")))
 							response (client/get "http://localhost:1518/ttt")]
 					(should= target, (:body response))))

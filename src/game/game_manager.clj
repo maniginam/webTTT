@@ -3,7 +3,8 @@
 						[ttt.board :as board]
 						[master.core :as tcore]
 						[html.game-writer :as writer]
-						[clojure.string :as str])
+						[clojure.string :as str]
+						[responders.core :as rcore])
 	(:import (httpServer Server)))
 
 (def default-game {:console        :web
@@ -47,20 +48,33 @@
 				board (board/create-board board-size)]
 		(swap! game assoc :board-size board-size :board board :status :ready-to-play)))
 
+(defn play-turn [entry]
+	(if (not (game/ai-turn? @game))
+		(let [box (Integer/parseInt (:box entry))]
+			(reset! game (game/update-game-with-move! @game box))
+			(reset! game (game/update-state @game))
+			(if (= :game-over (:status @game)) (html.core/write! @game)))
+		(while (and (not (game/game-over? @game)) (game/ai-turn? @game))
+			(reset! game (game/update-state @game)))))
+
 (defn setup-game [entry]
 	(tcore/set-parameters (assoc @game :entry entry))
+	(swap! game assoc :console :web)
 	(when (= :ready-to-play (:status @game))
 		(reset! game (game/update-state @game))
 		(tcore/draw-state @game)))
 
 (defn reset-game []
 	(reset! game default-game)
-	(swap! game assoc :status :user-setup))
+	(swap! game assoc :status :user-setup :console :web))
 
-(defn manage-game [entry]
-	(if (nil? entry)
-		(reset-game)
-		(setup-game entry)))
+(defn manage-game [request]
+	(let [entry (:entry request)]
+		(cond (nil? entry) (reset-game)
+					(= :setup (:responder request)) (setup-game entry)
+					(= :playing (:responder request)) (play-turn entry)
+					(= :play-again (:responder request)) (do (reset! game default-game) (swap! game assoc :status :user-setup)))
+					:else nil))
 
 
 

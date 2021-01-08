@@ -1,11 +1,12 @@
 (ns responders.play-responder
 	(:require [clojure.java.io :as io]
+						[clojure.string :as str]
 						[game.game-manager :as manager]
+						[html.game-over-writer :as over]
+						[html.game-writer :as writer]
 						[master.core :as tcore]
 						[master.game-master :as game]
-						[html.game-writer :as writer]
-						[html.game-over-writer :as over]
-						[clojure.string :as str]))
+						[responders.core :as rcore]))
 
 (defn play-turn [resource]
 	(if (not (game/ai-turn? @manager/game))
@@ -16,7 +17,7 @@
 		(while (and (not (game/game-over? @manager/game)) (game/ai-turn? @manager/game))
 			(reset! manager/game (game/update-state @manager/game)))))
 
-(defmethod responders.core/respond :playing [request]
+(defmethod rcore/respond :playing [request]
 	(play-turn (:resource request))
 	(let [body (if (= :playing (:status @manager/game))
 							 (slurp (str (:root request) "/ttt.html"))
