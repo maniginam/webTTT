@@ -12,7 +12,7 @@
 		(let [box (Integer/parseInt (last (str/split resource #"=")))]
 			(reset! manager/game (game/update-game-with-move! @manager/game box))
 			(reset! manager/game (game/update-state @manager/game))
-			(if (= :game-over (:status @manager/game)) (html.standard-lines/write! @manager/game)))
+			(if (= :game-over (:status @manager/game)) (html.core/write! @manager/game)))
 		(while (and (not (game/game-over? @manager/game)) (game/ai-turn? @manager/game))
 			(reset! manager/game (game/update-state @manager/game)))))
 

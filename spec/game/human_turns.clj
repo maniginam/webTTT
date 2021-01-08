@@ -28,9 +28,9 @@
 			(let [response (client/get "http://localhost:2019/ttt/playing/box=2")
 						game @manager/game
 						target (slurp (.getCanonicalPath (io/file "./tictactoe/game-over.html")))]
-				(should= :player1 (:current-player game))
+				(should= 1 (:winner game))
 				(should= "X" (nth (:board game) 2))
-				(should (:game-over game))
+				(should= :game-over (:status game))
 				(should-contain target (:body response))))
 
 		)
