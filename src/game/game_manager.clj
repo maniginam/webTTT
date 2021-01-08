@@ -3,7 +3,8 @@
 						[ttt.board :as board]
 						[master.core :as tcore]
 						[html.game-writer :as writer]
-						[clojure.string :as str]))
+						[clojure.string :as str])
+	(:import (httpServer Server)))
 
 (def default-game {:console        :web
 									 :status         :waiting
@@ -18,55 +19,49 @@
 (defmethod tcore/set-parameters :waiting [not-setup-game]
 	(swap! game assoc :status :user-setup))
 
-
-
 (defn set-players [users]
-	(cond (zero? users) (swap! game assoc :player1 {:type :computer :piece "X" :player-num 1} :player2 {:type :computer :piece "O" :player-num 2})
-				(= 2 users) (swap! game assoc :player1 {:type :human :piece "X" :player-num 1} :player2 {:type :human :piece "O" :player-num 2})
-				:else nil))
+	(cond (zero? users) (swap! game assoc :status :level-setup :player1 {:type :computer :piece "X" :player-num 1} :player2 {:type :computer :piece "O" :player-num 2})
+				(= 2 users) (swap! game assoc :status :board-setup :player1 {:type :human :piece "X" :player-num 1} :player2 {:type :human :piece "O" :player-num 2})
+				:else (swap! game assoc :status :player-setup)))
 
-(defmethod tcore/set-parameters :user-setup [waiting-game]
-	(let [status (cond (zero? (:users @game)) :level-setup
-										 (= 1 (:users @game)) :player-setup
-										 (= 2 (:users @game)) :board-setup)]
-		(set-players (:users @game))
-		(swap! game assoc :status status)))
+(defmethod tcore/set-parameters :user-setup [game-entry]
+	(let [users (Integer/parseInt (:users (get game-entry :entry)))]
+		(swap! game assoc :users users)
+		(set-players users)))
 
-(defmethod tcore/set-parameters :player-setup [not-setup-game]
-	(swap! game assoc :status :level-setup))
-
-(defmethod tcore/set-parameters :level-setup [level-setup-game]
-	(swap! game assoc :status :board-setup))
-
-(defmethod tcore/set-parameters :board-setup [game-without-board]
-	(let [board-size (:board-size game-without-board)
-				board (board/create-board board-size)]
-		(swap! game assoc :board board :status :ready-to-play)))
-
-(defn manage-game [request entries]
-	(doseq [entry entries]
-		(let [key (key entry)
-					val (try (Integer/parseInt (val entry))
-									 (catch Exception e
-										 (if (= :player key)
-											 (val entry)
-											 (keyword (val entry)))))]
-			(cond (= val "X") (do (swap! game assoc :player1 (assoc (:player1 @game) :type :human))
+(defmethod tcore/set-parameters :player-setup [game-entry]
+	(let [human (:piece (get game-entry :entry))]
+		(cond (= "X" human) (do (swap! game assoc :player1 (assoc (:player1 @game) :type :human))
 														(swap! game assoc :player2 (assoc (:player2 @game) :type :computer)))
-						(= val "O") (do (swap! game assoc :player1 (assoc (:player1 @game) :type :computer))
+					(= "O" human) (do (swap! game assoc :player1 (assoc (:player1 @game) :type :computer))
 														(swap! game assoc :player2 (assoc (:player2 @game) :type :human)))
-						:else (swap! game assoc key val))))
-	(tcore/set-parameters @game)
-	(if (= :ready-to-play (:status @game))
-		(do (reset! game (game/update-state @game))
-			(tcore/draw-state @game)
-				;(while (and (not (game/game-over? @game)) (game/ai-turn? @game))
-				;	(reset! game (game/update-state @game)))
-				;(if (game/ai-turn? @game-atom)
-				;	(tcore/run-game @game-atom))
-				)
-		)
-	)
+					:else nil)
+		(swap! game assoc :status :level-setup)))
+
+(defmethod tcore/set-parameters :level-setup [game-entry]
+	(let [level (:level (get game-entry :entry))]
+		(swap! game assoc :level (keyword level) :status :board-setup)))
+
+(defmethod tcore/set-parameters :board-setup [game-entry]
+	(let [board-size (Integer/parseInt (:board-size (get game-entry :entry)))
+				board (board/create-board board-size)]
+		(swap! game assoc :board-size board-size :board board :status :ready-to-play)))
+
+(defn setup-game [entry]
+	(tcore/set-parameters (assoc @game :entry entry))
+	(when (= :ready-to-play (:status @game))
+		(reset! game (game/update-state @game))
+		(tcore/draw-state @game)))
+
+(defn reset-game []
+	(reset! game default-game)
+	(swap! game assoc :status :user-setup))
+
+(defn manage-game [entry]
+	(if (nil? entry)
+		(reset-game)
+		(setup-game entry)))
+
 
 
 

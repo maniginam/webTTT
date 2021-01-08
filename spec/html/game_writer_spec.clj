@@ -26,12 +26,13 @@
 					(should-contain "<rect x=\"5.0%\" y=\"5.0%\" width=\"30.0%\" height=\"30.0%\" fill=\"blue\" opacity=\"10%\"/>", lines)))
 
 			(it "with 1 X"
-				(std/write! {:status :playing :board [0 1 2 3 "X" 5 6 7 8]})
+				(std/write! {:status :playing :board [0 1 2 3 "X" 5 6 7 8] :current-player :player2 :player2 {:piece "O"}})
 				(let [ttt (.getCanonicalPath (io/file "./tictactoe/ttt.html"))
 							html (slurp ttt)
 							lines (str/split-lines html)]
 					(should-contain head, lines)
 					(should-contain h1, lines)
+					(should-contain "<h2>O's Turn!</h2>" lines)
 					(should-contain "<line x1=\"5.0%\" y1=\"35.0%\" x2=\"95.0%\" y2=\"35.0%\" stroke=\"rgb(94, 94, 99)\" stroke-width=\"4\"/>", lines)
 					(should-contain "<rect x=\"35.0%\" y=\"35.0%\" width=\"30.0%\" height=\"30.0%\" fill=\"blue\" opacity=\"10%\"/>", lines)
 					(should-contain "<a href=\"/ttt/playing/box=4\">" lines))))

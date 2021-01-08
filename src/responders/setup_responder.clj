@@ -5,20 +5,19 @@
 						[responders.core :as rcore]
 						[html.game-writer :as writer]))
 
-(def file-map {:user-setup  "/user-setup.html" :player-setup "/player-setup.html" :level-setup "/level-setup.html"
+(def file-map {:waiting     "/index.html" :user-setup "/user-setup.html" :player-setup "/player-setup.html" :level-setup "/level-setup.html"
 							 :board-setup "/board-setup.html" :ready-to-play "/ttt.html" :playing "/ttt.html" :game-over "/game-over.html"})
 
 (defn extract-game [request]
 	(let [target (str (first (:target request)))
 				entries (str/split (second (str/split target #"\?")) #"&")
 				entriesMap (into {} (map #(assoc {} (keyword (first %)) (second %)) (map #(str/split % #"=") entries)))]
-		(manager/manage-game request entriesMap))
+		(manager/manage-game entriesMap))
 	)
 
 (defmethod rcore/respond :setup [request]
 	(if (= :waiting (:status @manager/game))
-		(do (reset! manager/game manager/default-game)
-				(manager/manage-game request nil))
+		(manager/manage-game nil)
 		(extract-game request))
 	(let [game @manager/game
 				body (slurp (str (:root request) (get file-map (:status game))))

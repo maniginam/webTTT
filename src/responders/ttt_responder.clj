@@ -1,10 +1,11 @@
 (ns responders.ttt-responder
-	(:require [clojure.java.io :as io]
-						[clojure.string :as str]
+	(:require [clojure.string :as str]
+						[game.game-manager :as manager]
 						[responders.core :as rcore]
-						[responders.play-responder :as play])
-	(:import (server Responder)
-					 (httpServer HttpResponseBuilder))
+						[responders.play-responder :as play]
+						[clojure.java.io :as io])
+	(:import (httpServer HttpResponseBuilder)
+					 (server Responder))
 	)
 
 (def file-map {:user-setup  "/user-setup.html" :player-setup "/player-setup.html" :level-setup "/level-setup.html"

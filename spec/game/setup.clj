@@ -6,7 +6,7 @@
 						[clojure.java.io :as io]))
 
 (describe "Game Setup"
-	(before-all (starter/start-server 1003 "tictactoe"))
+	(before-all (starter/start-server 1003 "tictactoe") (reset! manager/game manager/default-game))
 	(after-all (if (> 0 (Thread/activeCount)) (starter/stop)))
 
 	(it "starts setup"
@@ -46,9 +46,10 @@
 
 	(context "sets players"
 		(it "human is X"
+			(reset! manager/game manager/default-game)
 			(swap! manager/game assoc :users 1 :status :player-setup)
 			(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/level-setup.html")))
-						response (client/get "http://localhost:1003/ttt/setup?player=X")]
+						response (client/get "http://localhost:1003/ttt/setup?piece=X")]
 				(should= :human (get (:player1 @manager/game) :type))
 				(should= :computer (get (:player2 @manager/game) :type))
 				(should-contain target (:body response))))
@@ -56,7 +57,7 @@
 		(it "human is O"
 			(swap! manager/game assoc :users 1 :status :player-setup)
 			(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/level-setup.html")))
-						response (client/get "http://localhost:1003/ttt/setup?player=O")]
+						response (client/get "http://localhost:1003/ttt/setup?piece=O")]
 				(should= :human (get (:player2 @manager/game) :type))
 				(should= :computer (get (:player1 @manager/game) :type))
 				(should-contain target (:body response))))
