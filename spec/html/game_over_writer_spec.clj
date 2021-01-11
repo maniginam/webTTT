@@ -2,12 +2,11 @@
 	(:require [clj-http.client :as client]
 						[clojure.java.io :as io]
 						[clojure.string :as str]
-						[game.game-manager :as manager]
-						[server.starter :as starter]
-						[speclj.core :refer :all]
 						[html.game-over-writer :as writer]
 						[hiccup.core :as hiccup]
-						[html.core :as std]))
+						[html.core :as hcore]
+						[server.starter :as starter]
+						[speclj.core :refer :all]))
 
 (def head (str "<link rel=\"stylesheet\" type=\"text/css\" href=\"/html/css/main.css\">"))
 (def h1 "<h1>Tic Tac Toe</h1>")
@@ -16,7 +15,7 @@
 
 	(context "winner:"
 		(it "cat's game"
-			(std/write! {:status :game-over :board ["X" "O" "X" "X" "O" "O" "O" "X" "X"] :winner 0})
+			(hcore/write! {:status :game-over :board ["X" "O" "X" "X" "O" "O" "O" "X" "X"] :winner 0})
 			(let [ttt (.getCanonicalPath (io/file "./tictactoe/game-over.html"))
 						html (slurp ttt)
 						lines (str/split-lines html)]
@@ -28,7 +27,7 @@
 				(should-contain "<rect x=\"5.0%\" y=\"5.0%\" width=\"30.0%\" height=\"30.0%\" fill=\"blue\" opacity=\"10%\"/>", lines)))
 
 		(it "x wins"
-			(std/write! {:status :game-over :board ["X" "X" "X" "X" "O" "O" "O" "X" "X"] :winner 1})
+			(hcore/write! {:status :game-over :board ["X" "X" "X" "X" "O" "O" "O" "X" "X"] :winner 1})
 			(let [ttt (.getCanonicalPath (io/file "./tictactoe/game-over.html"))
 						html (slurp ttt)
 						lines (str/split-lines html)]
@@ -41,7 +40,7 @@
 		)
 
 	(it "o wins"
-		(std/write! {:status :game-over :board ["X" "O" "X" "X" "O" "O" "O" "O" "X"] :winner 2 :winning-line [1 4 7]})
+		(hcore/write! {:status :game-over :board ["X" "O" "X" "X" "O" "O" "O" "O" "X"] :winner 2 :winning-line [1 4 7]})
 		(let [ttt (.getCanonicalPath (io/file "./tictactoe/game-over.html"))
 					html (slurp ttt)
 					lines (str/split-lines html)]

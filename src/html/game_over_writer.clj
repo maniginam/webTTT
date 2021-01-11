@@ -1,8 +1,8 @@
 (ns html.game-over-writer
-	(:require [hiccup.core :as hiccup]
+	(:require [clojure.java.io :as io]
+						[hiccup.core :as hiccup]
 						[html.core :as hcore]
-						[html.game-writer :as board]
-						[clojure.java.io :as io]))
+						[html.game-writer :as board]))
 
 (def winners {0 "Cat's Game!" 1 "X Wins!" 2 "O Wins!"})
 

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="next-jdbc">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../mySQL/next-jdbc" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

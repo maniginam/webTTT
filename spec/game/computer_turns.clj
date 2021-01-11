@@ -2,10 +2,9 @@
 	(:require [clj-http.client :as client]
 						[clojure.java.io :as io]
 						[game.game-manager :as manager]
-						[spec-helper :as helper]
 						[server.starter :as starter]
-						[speclj.core :refer :all]
-						[clojure.string :as str]))
+						[spec-helper :as helper]
+						[speclj.core :refer :all]))
 
 (describe "Computer"
 	(before-all (starter/start-server 2018 "tictactoe") (reset! manager/game helper/default-game))
@@ -16,7 +15,9 @@
 			(swap! manager/game assoc :status :board-setup :board helper/empty-board :player2 {:type :human})
 			(let [response (client/get "http://localhost:2018/ttt/setup?board-size=3")
 						game @manager/game
+						;request (comp/make-request {:port 2018 :box-played 0 :console :web :status :playing :current-player :player1 :player1 {:type :computer :piece "X" :player-num 1}})
 						target (slurp (.getCanonicalPath (io/file "./tictactoe/ttt.html")))]
+				;(should-contain "box" (first (str/split (last (str/split request #"\/")) #"=")))
 				(should= :playing (:status game))
 				(should= :player2 (:current-player game))
 				(should= 1 (count (filter #(= "X" %) (:board game))))
@@ -51,18 +52,6 @@
 				(should-not= :game-over (:status game))
 				(should-be-nil (:winner game))
 				(should-contain target (:body response))))
-
-		(xit
-		 (it "full game"
-			(reset! manager/game helper/default-game)
-			(swap! manager/game assoc :status :board-setup :users 0 :board helper/empty-board :level :hard)
-			(let [response (client/get "http://localhost:2018/ttt/setup?board-size=3")
-						game @manager/game
-						target (slurp (.getCanonicalPath (io/file "./tictactoe/game-over.html")))]
-				(should= :game-over (:status game))
-				(should= 9 (count (filter #(string? %) (:board game))))
-				(should-contain target (:body response))))
-		 )
 		)
 	)
 

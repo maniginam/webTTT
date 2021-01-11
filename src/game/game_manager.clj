@@ -1,24 +1,39 @@
 (ns game.game-manager
-	(:require [master.game-master :as game]
-						[ttt.board :as board]
-						[master.core :as tcore]
+	(:require [clojure.string :as str]
+						[html.core :as hcore]
 						[html.game-writer :as writer]
-						[clojure.string :as str]
-						[responders.core :as rcore])
-	(:import (httpServer Server)))
+						[master.core :as tcore]
+						[master.game-master :as game]
+						[ttt.board :as board]))
 
 (def default-game {:console        :web
+									 :persistence    {:db :mysql :dbname "ttt"}
 									 :status         :waiting
 									 :users          nil
 									 :board-size     3
 									 :current-player :player1
-									 :player1        {:player-num 1 :piece "X" :type :computer}
-									 :player2        {:player-num 2 :piece "O" :type :computer}
-									 :persistence    {:db :mysql :dbname "mysql" :table "ttt"}})
+									 :player1        {:player-num 1 :piece "X" :type nil}
+									 :player2        {:player-num 2 :piece "O" :type nil}})
 (def game (atom default-game))
 
-(defmethod tcore/set-parameters :waiting [not-setup-game]
-	(swap! game assoc :status :user-setup))
+(defn restart! [game-to-restart]
+	(let [last-game (:last-game @game)]
+		(reset! game last-game)
+		(swap! game assoc :console :web)
+		(tcore/draw-state @game)
+	@game))
+
+(defmethod tcore/set-parameters :waiting [game-entry]
+	(reset! game (game/update-state @game))
+	(if (or (nil? (:last-game @game)) (game/game-over? (:last-game @game)))
+		(swap! game assoc :status :user-setup)
+		(swap! game assoc :status :restart?)))
+
+(defmethod tcore/set-parameters :restart? [game-entry]
+	(let [play-last-game? (:continue (get game-entry :entry))]
+		(if (= "no" play-last-game?)
+			(swap! game assoc :status :user-setup)
+			(restart! @game))))
 
 (defn set-players [users]
 	(cond (zero? users) (swap! game assoc :status :level-setup :player1 {:type :computer :piece "X" :player-num 1} :player2 {:type :computer :piece "O" :player-num 2})
@@ -53,7 +68,7 @@
 		(let [box (Integer/parseInt (:box entry))]
 			(reset! game (game/update-game-with-move! @game box))
 			(reset! game (game/update-state @game))
-			(if (= :game-over (:status @game)) (html.core/write! @game)))
+			(if (= :game-over (:status @game)) (hcore/write! @game)))
 		(while (and (not (game/game-over? @game)) (game/ai-turn? @game))
 			(reset! game (game/update-state @game)))))
 
@@ -73,8 +88,8 @@
 		(cond (nil? entry) (reset-game)
 					(= :setup (:responder request)) (setup-game entry)
 					(= :playing (:responder request)) (play-turn entry)
-					(= :play-again (:responder request)) (do (reset! game default-game) (swap! game assoc :status :user-setup)))
-					:else nil))
+					(= :play-again (:responder request)) (do (reset! game default-game) (swap! game assoc :status :user-setup))
+					:else nil)))
 
 
 

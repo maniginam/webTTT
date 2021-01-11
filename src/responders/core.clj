@@ -1,3 +1,3 @@
-(ns responders.core)
-
-(defmulti respond :responder)
+;(ns responders.core)
+;
+;(defmulti respond :responder)

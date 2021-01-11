@@ -1,9 +1,9 @@
 (ns server.starter_spec
-	(:require [speclj.core :refer :all]
-						[server.starter :as starter]
-						[clj-http.client :as client]
+	(:require [clj-http.client :as client]
 						[clojure.java.io :as io]
-						[game.game-manager :as manager]))
+						[game.game-manager :as manager]
+						[server.starter :as starter]
+						[speclj.core :refer :all]))
 
 	(describe "Connection to Server"
 

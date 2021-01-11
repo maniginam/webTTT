@@ -3,10 +3,10 @@
 						[clojure.java.io :as io]
 						[clojure.string :as str]
 						[game.game-manager :as manager]
-						[server.starter :as starter]
-						[speclj.core :refer :all]
 						[html.game-writer :as writer]
-						[html.core :as std]))
+						[html.core :as std]
+						[server.starter :as starter]
+						[speclj.core :refer :all]))
 
 (def head (str "<link rel=\"stylesheet\" type=\"text/css\" href=\"/html/css/main.css\">"))
 (def h1 "<h1>Tic Tac Toe</h1>")

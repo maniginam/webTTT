@@ -1,19 +1,46 @@
 (ns game.setup
 	(:require [clj-http.client :as client]
+						[clojure.java.io :as io]
 						[game.game-manager :as manager]
 						[server.starter :as starter]
-						[speclj.core :refer :all]
-						[clojure.java.io :as io]))
+						[speclj.core :refer :all]))
 
 (describe "Game Setup"
 	(before-all (starter/start-server 1003 "tictactoe") (reset! manager/game manager/default-game))
 	(after-all (if (> 0 (Thread/activeCount)) (starter/stop)))
 
+	(context "Continue last game?"
+		(it "isn't allowed due to completed last-game"
+			(swap! manager/game assoc :status :waiting :last-game {:status :game-over :board ["X" "X" "X" "X"]})
+			(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/user-setup.html")))
+						response (client/get "http://localhost:1003/ttt/setup")]
+				(should= :user-setup (:status @manager/game))
+				(should-contain starter/server-name (get (:headers response) "Server"))
+				(should-contain target (:body response))))
+
+		(it "no"
+			(swap! manager/game assoc :status :restart? :last-game {:status :playing :board [0 1 2 3]})
+			(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/user-setup.html")))
+						response (client/get "http://localhost:1003/ttt/setup/continue=no")]
+				(should= :user-setup (:status @manager/game))
+				(should-contain starter/server-name (get (:headers response) "Server"))
+				(should-contain target (:body response))))
+
+		(it "yes"
+			(swap! manager/game assoc :status :restart? :console :web :last-game {:status :playing :board [0 1 2 3] :console :web :current-player :player1 :player1 {:player-num 1 :piece "X" :type :human}})
+			(let [response (client/get "http://localhost:1003/ttt/setup/continue=yes")
+						target (slurp (.getCanonicalPath (io/file "./tictactoe/ttt.html")))]
+				(should= :playing (:status @manager/game))
+				(should-contain starter/server-name (get (:headers response) "Server"))
+				(should-contain target (:body response))))
+		)
+
+
 	(it "starts setup"
 		(swap! manager/game assoc :status :waiting)
-		(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/user-setup.html")))
+		(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/continue?.html")))
 					response (client/get "http://localhost:1003/ttt/setup")]
-			(should= :user-setup (:status @manager/game))
+			(should= :restart? (:status @manager/game))
 			(should-contain starter/server-name (get (:headers response) "Server"))
 			(should-contain target (:body response))))
 

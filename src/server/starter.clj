@@ -1,10 +1,7 @@
 (ns server.starter
 	(:require [clojure.java.io :as io]
-						[clojure.string :as str]
-						[clojure.java.shell :as shell]
-						[responders.ttt-responder :as ttt-responder]
-						[responders.setup-responder :as form-responder]
-						[game.game-manager :as manager])
+						[game.game-manager :as manager]
+						[responders.ttt-responder :as ttt-responder])
 	(:import (httpServer Server HttpConnectionFactory)
 					 (server Router SocketHost)
 					 (java.net Socket)))
@@ -15,10 +12,6 @@
 (def root (atom "tictactoe"))
 (def port (atom 1234))
 (def console (atom :gui))
-
-;(deftype Foo []
-;  Responder
-;  (respond [this request builder] "hello"))
 
 (defn register-responders [router root]
 	(Server/registerResponders router (.getCanonicalPath (io/file (str "./" root))))

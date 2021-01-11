@@ -4,8 +4,7 @@
 						[game.game-manager :as manager]
 						[spec-helper :as helper]
 						[server.starter :as starter]
-						[speclj.core :refer :all]
-						[clojure.string :as str]))
+						[speclj.core :refer :all]))
 
 (describe "Human"
 	(before-all (starter/start-server 2019 "tictactoe") (reset! manager/game helper/default-game))

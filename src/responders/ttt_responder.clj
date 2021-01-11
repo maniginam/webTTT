@@ -1,13 +1,11 @@
 (ns responders.ttt-responder
-	(:require [clojure.string :as str]
-						[game.game-manager :as manager]
-						[responders.core :as rcore]
-						[responders.play-responder :as play]
-						[clojure.java.io :as io])
+	(:require [clojure.java.io :as io]
+						[clojure.string :as str]
+						[game.game-manager :as manager])
 	(:import (httpServer HttpResponseBuilder)
 					 (server Responder)))
 
-(def file-map {:waiting "/index.html" :user-setup "/user-setup.html" :player-setup "/player-setup.html" :level-setup "/level-setup.html"
+(def file-map {:waiting     "/index.html" :restart? "/continue?.html" :user-setup "/user-setup.html" :player-setup "/player-setup.html" :level-setup "/level-setup.html"
 							 :board-setup "/board-setup.html" :ready-to-play "/ttt.html" :playing "/ttt.html" :game-over "/game-over.html"})
 
 (defn update-game-response [request]

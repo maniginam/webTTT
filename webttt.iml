@@ -69,7 +69,6 @@
     <orderEntry type="library" name="Leiningen: org.bouncycastle/bcmail-jdk14:1.38" level="project" />
     <orderEntry type="library" name="Leiningen: org.bouncycastle/bcprov-jdk14:1.38" level="project" />
     <orderEntry type="library" name="Leiningen: org.bouncycastle/bctsp-jdk14:1.38" level="project" />
-    <orderEntry type="library" name="Leiningen: org.clojure/clojure:1.10.1" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/core.specs.alpha:0.2.44" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/java.data:1.0.78" level="project" />
     <orderEntry type="library" name="Leiningen: org.clojure/java.jdbc:0.7.11" level="project" />
@@ -96,5 +95,9 @@
     <orderEntry type="library" name="Leiningen: xalan:2.7.0" level="project" />
     <orderEntry type="library" name="Leiningen: xml-apis/xml-apis-ext:1.3.04" level="project" />
     <orderEntry type="library" name="Leiningen: xml-apis:1.3.04" level="project" />
+    <orderEntry type="library" name="java" level="project" />
+    <orderEntry type="library" name="mysql-connector-java-8.0" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/clojure:1.10.1" level="project" />
+    <orderEntry type="library" name="next-jdbc" level="project" />
   </component>
 </module>

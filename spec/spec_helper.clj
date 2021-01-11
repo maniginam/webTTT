@@ -4,7 +4,7 @@
 
 (def default-game {:console        :web
 									 :status         :waiting
-									 :persistence    {:db :mysql :dbname "mysql" :table "ttt"}
+									 :persistence    {:db :mysql :dbname "ttt"}
 									 :users          nil
 									 :board-size     3
 									 :current-player :player1
