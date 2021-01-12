@@ -7,8 +7,8 @@
 						[speclj.core :refer :all]))
 
 (describe "Computer"
-	(before-all (starter/start-server 2018 "tictactoe") (reset! manager/game helper/default-game))
-	(after-all (if (> 0 (Thread/activeCount)) (starter/stop)))
+	(before (starter/start-server 2018 "tictactoe") (reset! manager/game helper/default-game))
+	(after (starter/stop))
 
 	(context "plays"
 		(it "round 1 of game"

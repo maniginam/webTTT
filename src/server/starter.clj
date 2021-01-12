@@ -36,8 +36,9 @@
 		(.end host))
 	(.close @socket-atom)
 	(reset! server-atom nil)
-	(reset! socket-atom nil))
-
+	(reset! socket-atom nil)
+	(Thread/sleep 500))
+;; TODO - GLM : why am i parsing options when server already does this; how to make reusable?!
 (defn split-options [options]
 	(loop [options options
 				 opts {}
@@ -51,13 +52,13 @@
 						(or (= "terminal" opt) (= "gui" opt)) (recur (rest options) (assoc opts :console opt) (first (rest options)))
 						:else (recur (rest options) opts (first (rest options)))))))
 
-			(defn -main [& options]
-				(let [opts (split-options options)]
-					(println "Running on port " (:port opts))
-					(println "Serving from: " (:root opts))
-					(reset! root (:root opts))
-					(reset! port (:port opts))
-					(reset! console (keyword (:console opts)))
-					(swap! manager/game assoc :console @console)
-					(start-server @port @root)))
+(defn -main [& options]
+	(let [opts (split-options options)]
+		(println "Running on port " (:port opts))
+		(println "Serving from: " (:root opts))
+		(reset! root (:root opts))
+		(reset! port (:port opts))
+		(reset! console (keyword (:console opts)))
+		(swap! manager/game assoc :console @console)
+		(start-server @port @root)))
 

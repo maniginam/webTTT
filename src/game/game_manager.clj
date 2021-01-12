@@ -1,7 +1,7 @@
 (ns game.game-manager
-	(:require [clojure.string :as str]
-						[html.core :as hcore]
-						[html.game-writer :as writer]
+	(:require [html.core :as hcore]
+						[html.game-writer] ;multimethod
+						[html.game-over-writer] ;multimethod
 						[master.core :as tcore]
 						[master.game-master :as game]
 						[ttt.board :as board]))
@@ -16,23 +16,27 @@
 									 :player2        {:player-num 2 :piece "O" :type nil}})
 (def game (atom default-game))
 
-(defn restart! [game-to-restart]
-	(let [last-game (:last-game @game)]
-		(reset! game last-game)
-		(swap! game assoc :console :web)
-		(tcore/draw-state @game)
-	@game))
-
 (defmethod tcore/set-parameters :waiting [game-entry]
 	(reset! game (game/update-state @game))
 	(if (or (nil? (:last-game @game)) (game/game-over? (:last-game @game)))
 		(swap! game assoc :status :user-setup)
 		(swap! game assoc :status :restart?)))
 
+(defn restart! [game-to-restart]
+	(let [last-game (:last-game @game)]
+		(reset! game last-game)
+		(swap! game assoc :console :web)
+		(tcore/draw-state @game)
+		@game))
+
+(defn no-restart! [game-entry]
+	(reset! game default-game)
+	(swap! game assoc :status :user-setup :console :web))
+
 (defmethod tcore/set-parameters :restart? [game-entry]
 	(let [play-last-game? (:continue (get game-entry :entry))]
-		(if (= "no" play-last-game?)
-			(swap! game assoc :status :user-setup)
+		(if (= play-last-game? "no")
+			(no-restart! @game)
 			(restart! @game))))
 
 (defn set-players [users]
@@ -66,8 +70,11 @@
 (defn play-turn [entry]
 	(if (not (game/ai-turn? @game))
 		(let [box (Integer/parseInt (:box entry))]
-			(reset! game (game/update-game-with-move! @game box))
-			(reset! game (game/update-state @game))
+			(if (string? (nth (:board @game) box))
+				@game
+				(do
+					(reset! game (game/update-game-with-move! @game box))
+					(reset! game (game/update-state @game))))
 			(if (= :game-over (:status @game)) (hcore/write! @game)))
 		(while (and (not (game/game-over? @game)) (game/ai-turn? @game))
 			(reset! game (game/update-state @game)))))
@@ -81,7 +88,7 @@
 
 (defn reset-game []
 	(reset! game default-game)
-	(swap! game assoc :status :user-setup :console :web))
+	(swap! game assoc :status :waiting :console :web))
 
 (defn manage-game [request]
 	(let [entry (:entry request)]

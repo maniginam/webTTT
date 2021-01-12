@@ -3,11 +3,12 @@
 						[clojure.string :as str]
 						[game.game-manager :as manager])
 	(:import (httpServer HttpResponseBuilder)
-					 (server Responder)))
+					 (server Responder)
+					 (java.util Map HashMap$HashIterator HashMap)))
 
 (def file-map {:waiting     "/index.html" :restart? "/continue?.html" :user-setup "/user-setup.html" :player-setup "/player-setup.html" :level-setup "/level-setup.html"
 							 :board-setup "/board-setup.html" :ready-to-play "/ttt.html" :playing "/ttt.html" :game-over "/game-over.html"})
-
+;; TODO - GLM : File Rsponder already serves files--don't dulplicate, let him do that
 (defn update-game-response [request]
 	(let [body (slurp (str (:root request) (get file-map (:status @manager/game))))
 				size (count body)
@@ -28,8 +29,7 @@
 				(recur (rest keys) (first (drop 1 keys)) requestMap)))))
 
 (defn extract-game-entry [request]
-	(let [target (str (first (:target request)))
-				entries (mapcat #(str/split % #"=") (mapcat #(str/split % #"&") (str/split (str (last (:target request))) #"\?")))
+	(let [entries (mapcat #(str/split % #"=") (mapcat #(str/split % #"&") (str/split (str (last (:target request))) #"\?")))
 				key (if (= 2 (count entries)) (keyword (first entries)) (keyword (second entries)))
 				entry-map (assoc {} key (last entries))]
 		entry-map))
@@ -44,15 +44,23 @@
 						entry (extract-game-entry requestMap)]
 				(assoc requestMap :entry entry)))))
 
+(defn not-nil-parse [requestMap]
+	(let [parsed-request (parse-request-for-game requestMap)]
+		(manager/manage-game parsed-request))
+	@manager/game)
+
+(defn nil-parse [requestMap]
+	(let [request (assoc requestMap :entry nil)]
+		(manager/manage-game request))
+	@manager/game)
+
+(defn home? [resource]
+	(or (nil? resource) (= "/ttt" resource)))
+
 (deftype TTTResponder [server-map]
 	Responder
 	(respond [this request]
-		(let [builder (new HttpResponseBuilder)
-					root (:root server-map)
-					requestMap (assoc (expand-java-map request) :root root :server-name (:server-name server-map))
-					crude-resource (:resource requestMap)]
-			(if (or (nil? crude-resource) (= "/ttt" crude-resource))
-				(.buildResponse builder (update-game-response requestMap))
-				(let [parsed-request (parse-request-for-game requestMap)]
-					(manager/manage-game parsed-request)
-					(.buildResponse builder (update-game-response parsed-request)))))))
+		(let [requestMap (merge (expand-java-map request) (select-keys server-map [:root]))]
+			(if (home? (:resource requestMap))
+				(nil-parse requestMap)
+				(not-nil-parse requestMap)))))

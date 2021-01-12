@@ -7,12 +7,13 @@
 						[server.starter :as starter]))
 
 (describe "Play Again Response"
-	(before-all (starter/start-server 7393 "tictactoe") (reset! manager/game helper/default-game))
-	(after-all (if (> 0 (Thread/activeCount)) (starter/stop)))
+	(before (starter/start-server 7393 "tictactoe") (reset! manager/game helper/default-game))
+	(after (starter/stop))
 
 	(context "play-again?"
 			(it "no thanks"
-				(let [response (client/get "http://localhost:2018/ttt/play-again")
+				(Thread/sleep 500)
+				(let [response (client/get "http://localhost:7393/ttt/play-again")
 							target (slurp (.getCanonicalPath (io/file "./tictactoe/user-setup.html")))
 							game @manager/game]
 					(should= :user-setup (:status game))

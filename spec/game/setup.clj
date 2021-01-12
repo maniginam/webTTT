@@ -6,8 +6,8 @@
 						[speclj.core :refer :all]))
 
 (describe "Game Setup"
-	(before-all (starter/start-server 1003 "tictactoe") (reset! manager/game manager/default-game))
-	(after-all (if (> 0 (Thread/activeCount)) (starter/stop)))
+	(before (starter/start-server 1003 "tictactoe") (reset! manager/game manager/default-game))
+	(after (starter/stop))
 
 	(context "Continue last game?"
 		(it "isn't allowed due to completed last-game"
@@ -37,7 +37,7 @@
 
 
 	(it "starts setup"
-		(swap! manager/game assoc :status :waiting)
+		(swap! manager/game assoc :status :waiting :last-game {:status :playing :board [0 "X" 2 3 4 5 6 7 8]})
 		(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/continue?.html")))
 					response (client/get "http://localhost:1003/ttt/setup")]
 			(should= :restart? (:status @manager/game))

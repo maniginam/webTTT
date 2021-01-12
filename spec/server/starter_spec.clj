@@ -6,14 +6,14 @@
 						[speclj.core :refer :all]))
 
 	(describe "Connection to Server"
+		(before (starter/start-server 1518 "tictactoe"))
+		(after (starter/stop))
 
 		(it "splits options"
 			(should= {:help "-h" :config "-x" :port 1518 :root "hello" :console "terminal"}
 							 (starter/split-options (into-array ["-h" "-x" "-p" "1518" "-r" "hello" "terminal"]))))
 
 		(context "responds with ttt index.html for"
-			(before-all (starter/start-server 1518 "tictactoe"))
-			(after-all (if (> 0 (Thread/activeCount)) (starter/stop)))
 
 			(it "blank request"
 				(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/index.html")))
