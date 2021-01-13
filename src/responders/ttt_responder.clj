@@ -46,13 +46,13 @@
 
 (defn not-nil-parse [requestMap]
 	(let [parsed-request (parse-request-for-game requestMap)]
-		(manager/manage-game parsed-request))
-	@manager/game)
+		(manager/manage-game parsed-request)
+		(update-game-response parsed-request)))
 
 (defn nil-parse [requestMap]
 	(let [request (assoc requestMap :entry nil)]
-		(manager/manage-game request))
-	@manager/game)
+		(manager/manage-game request)
+		(update-game-response request)))
 
 (defn home? [resource]
 	(or (nil? resource) (= "/ttt" resource)))
