@@ -1,19 +1,21 @@
 (ns responders.ttt-responder
 	(:require [clojure.java.io :as io]
 						[clojure.string :as str]
-						[game.game-manager :as manager])
-	(:import (httpServer HttpResponseBuilder)
-					 (server Responder)
-					 (java.util Map HashMap$HashIterator HashMap)))
+						[game.game-manager :as manager]
+						[clj-http.client :as client])
+	(:import (server Responder)
+					 (httpServer FileResponder)))
+
+(def root (atom (str (.getCanonicalPath (io/file "./tictactoe")))))
 
 (def file-map {:waiting     "/index.html" :restart? "/continue?.html" :user-setup "/user-setup.html" :player-setup "/player-setup.html" :level-setup "/level-setup.html"
 							 :board-setup "/board-setup.html" :ready-to-play "/ttt.html" :playing "/ttt.html" :game-over "/game-over.html"})
+
 ;; TODO - GLM : File Rsponder already serves files--don't dulplicate, let him do that
 (defn update-game-response [request]
-	(let [body (slurp (str (:root request) (get file-map (:status @manager/game))))
+	(let [body (slurp (str @root (get file-map (:status @manager/game))))
 				size (count body)
-				response {"Server"         (:server-name request)
-									"statusCode"     (int 200)
+				response {"statusCode"     (int 200)
 									"Content-Type"   "text/html"
 									"body"           (.getBytes body)
 									"Content-Length" size}]
@@ -44,23 +46,37 @@
 						entry (extract-game-entry requestMap)]
 				(assoc requestMap :entry entry)))))
 
-(defn not-nil-parse [requestMap]
+(defn send-new-request [request]
+	(let [request-string (str "http://" (:Host request) (get file-map (:status @manager/game)))]
+		(update-game-response request)
+	))
+
+(defn not-home-parse [requestMap]
 	(let [parsed-request (parse-request-for-game requestMap)]
 		(manager/manage-game parsed-request)
-		(update-game-response parsed-request)))
+		(update-game-response parsed-request)
+		;(send-new-request requestMap)
+		))
 
-(defn nil-parse [requestMap]
+(defn home-no-parse [requestMap]
 	(let [request (assoc requestMap :entry nil)]
 		(manager/manage-game request)
-		(update-game-response request)))
+		(update-game-response request)
+		;(send-new-request request)
+	))
 
 (defn home? [resource]
 	(or (nil? resource) (= "/ttt" resource)))
 
-(deftype TTTResponder [server-map]
+(defn create-response-map [request]
+	(let [request-map (expand-java-map request)
+				response-map (if (home? (:resource request-map))
+
+											 (home-no-parse request-map)
+											 (not-home-parse request-map))]
+		response-map))
+
+(deftype TTTResponder []
 	Responder
 	(respond [this request]
-		(let [requestMap (merge (expand-java-map request) (select-keys server-map [:root]))]
-			(if (home? (:resource requestMap))
-				(nil-parse requestMap)
-				(not-nil-parse requestMap)))))
+		(create-response-map request)))

@@ -1,6 +1,5 @@
 (ns server.starter
 	(:require [clojure.java.io :as io]
-						[game.game-manager :as manager]
 						[responders.ttt-responder :as ttt-responder])
 	(:import (httpServer Server HttpConnectionFactory)
 					 (server Router SocketHost)
@@ -15,9 +14,8 @@
 
 (defn register-responders [router root]
 	(Server/registerResponders router (.getCanonicalPath (io/file (str "./" root))))
-	(let [server-map {:router router :root root :server-name server-name}
-				ttt-regex #"/ttt"
-				ttt-responder (ttt-responder/->TTTResponder server-map)]
+	(let [ttt-regex #"/ttt"
+				ttt-responder (ttt-responder/->TTTResponder)]
 		(.registerResponder router "GET" ttt-regex ttt-responder)))
 
 (defn start-server [port root]
@@ -32,12 +30,12 @@
 
 (defn stop []
 	(assert @server-atom "no server running")
-	(let [host (:host @server-atom)]
-		(.end host))
+	(.end (:host @server-atom))
 	(.close @socket-atom)
 	(reset! server-atom nil)
 	(reset! socket-atom nil)
-	(Thread/sleep 500))
+	(Thread/sleep 100))
+
 ;; TODO - GLM : why am i parsing options when server already does this; how to make reusable?!
 (defn split-options [options]
 	(loop [options options
@@ -49,16 +47,22 @@
 						(= "-x" opt) (recur (rest options) (assoc opts :config "-x") (first (rest options)))
 						(= "-p" opt) (recur (rest options) (assoc opts :port (Integer/parseInt (second options))) (first (rest options)))
 						(= "-r" opt) (recur (rest options) (assoc opts :root (second options)) (first (rest options)))
-						(or (= "terminal" opt) (= "gui" opt)) (recur (rest options) (assoc opts :console opt) (first (rest options)))
+						;(or (= "terminal" opt) (= "gui" opt)) (recur (rest options) (assoc opts :console opt) (first (rest options)))
 						:else (recur (rest options) opts (first (rest options)))))))
 
 (defn -main [& options]
-	(let [opts (split-options options)]
-		(println "Running on port " (:port opts))
-		(println "Serving from: " (:root opts))
-		(reset! root (:root opts))
-		(reset! port (:port opts))
-		(reset! console (keyword (:console opts)))
-		(swap! manager/game assoc :console @console)
-		(start-server @port @root)))
+	(Server/submitArgs options)
+	(let [args (Server/makeArgMap options)
+				port (get args "-p" 1234)
+				root (get args "-r" "tictactoe")]
+		(reset! ttt-responder/root root)
+		(start-server port root)))
+;(let [opts (split-options options)]
+;	(println "Running on port " (:port opts))
+;	(println "Serving from: " (:root opts))
+;	(reset! root (:root opts))
+;	(reset! port (:port opts))
+;	(reset! console (keyword (:console opts)))
+;	(swap! manager/game assoc :console @console)
+;	(start-server @port @root)))
 
