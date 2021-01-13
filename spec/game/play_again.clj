@@ -16,6 +16,7 @@
 							target (slurp (.getCanonicalPath (io/file "./tictactoe/user-setup.html")))
 							game @manager/game]
 					(should= :user-setup (:status game))
-					(should-contain target (slurp (:body response)))))
+					;(should-contain target (slurp (:body response)))
+					(should-contain :re-route (keys response))))
 		)
 	)

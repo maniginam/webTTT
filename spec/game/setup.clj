@@ -16,7 +16,8 @@
 						response (walk/keywordize-keys (responder/create-response-map request))
 						target (slurp (.getCanonicalPath (io/file "./tictactoe/user-setup.html")))]
 				(should= :user-setup (:status @manager/game))
-				(should-contain target (slurp (:body response)))))
+				;(should-contain target (slurp (:body response)))
+				(should-contain :re-route (keys response))))
 
 		(it "no"
 			(swap! manager/game assoc :status :restart? :last-game {:status :playing :board [0 1 2 3]})
@@ -24,7 +25,8 @@
 						request (assoc helper/request-map "resource" "/ttt/setup/continue=no")
 						response (walk/keywordize-keys (responder/create-response-map request))]
 				(should= :user-setup (:status @manager/game))
-				(should-contain target (slurp (:body response)))))
+				;(should-contain target (slurp (:body response)))
+				(should-contain :re-route (keys response))))
 
 		(it "yes"
 			(swap! manager/game assoc :status :restart? :console :web :last-game {:status :playing :board [0 1 2 3] :console :web :current-player :player1 :player1 {:player-num 1 :piece "X" :type :human}})
@@ -32,7 +34,8 @@
 						response (walk/keywordize-keys (responder/create-response-map request))
 						target (slurp (.getCanonicalPath (io/file "./tictactoe/ttt.html")))]
 				(should= :playing (:status @manager/game))
-				(should-contain target (slurp (:body response)))))
+				;(should-contain target (slurp (:body response)))
+				(should-contain :re-route (keys response))))
 		)
 
 
@@ -42,7 +45,8 @@
 					request (assoc helper/request-map "resource" "/ttt/setup")
 					response (walk/keywordize-keys (responder/create-response-map request))]
 			(should= :restart? (:status @manager/game))
-			(should-contain target (slurp (:body response)))))
+			;(should-contain target (slurp (:body response)))
+			(should-contain :re-route (keys response))))
 
 	(context "sets user-count with"
 		(it "0 humans"
@@ -51,7 +55,8 @@
 						request (assoc helper/request-map "resource" "/ttt/setup?users=0")
 						response (walk/keywordize-keys (responder/create-response-map request))]
 				(should= 0 (:users @manager/game))
-				(should-contain target (slurp (:body response)))))
+				;(should-contain target (slurp (:body response)))
+				(should-contain :re-route (keys response))))
 
 		(it "1 humans"
 			(swap! manager/game assoc :status :user-setup)
@@ -59,7 +64,8 @@
 						request (assoc helper/request-map "resource" "/ttt/setup?users=1")
 						response (walk/keywordize-keys (responder/create-response-map request))]
 				(should= 1 (:users @manager/game))
-				(should-contain target (slurp (:body response)))))
+				;(should-contain target (slurp (:body response)))
+				(should-contain :re-route (keys response))))
 
 		(it "2 humans"
 			(swap! manager/game assoc :status :user-setup)
@@ -67,7 +73,8 @@
 						request (assoc helper/request-map "resource" "/ttt/setup?users=2")
 						response (walk/keywordize-keys (responder/create-response-map request))]
 				(should= 2 (:users @manager/game))
-				(should-contain target (slurp (:body response)))))
+				;(should-contain target (slurp (:body response)))
+				(should-contain :re-route (keys response))))
 		)
 
 
@@ -80,7 +87,8 @@
 						response (walk/keywordize-keys (responder/create-response-map request))]
 				(should= :human (get (:player1 @manager/game) :type))
 				(should= :computer (get (:player2 @manager/game) :type))
-				(should-contain target (slurp (:body response)))))
+				;(should-contain target (slurp (:body response)))
+				(should-contain :re-route (keys response))))
 
 		(it "human is O"
 			(swap! manager/game assoc :users 1 :status :player-setup)
@@ -89,7 +97,8 @@
 						response (walk/keywordize-keys (responder/create-response-map request))]
 				(should= :human (get (:player2 @manager/game) :type))
 				(should= :computer (get (:player1 @manager/game) :type))
-				(should-contain target (slurp (:body response)))))
+				;(should-contain target (slurp (:body response)))
+				(should-contain :re-route (keys response))))
 		)
 
 	(it "sets level"
@@ -98,7 +107,8 @@
 					request (assoc helper/request-map "resource" "/ttt/setup?level=easy")
 					response (walk/keywordize-keys (responder/create-response-map request))]
 			(should= :easy (get @manager/game :level))
-			(should-contain target (slurp (:body response)))))
+			;(should-contain target (slurp (:body response)))
+			(should-contain :re-route (keys response))))
 
 	(it "sets board"
 		(swap! manager/game assoc :console :web :status :board-setup :users 2 :level :easy :player1 {:piece "X" :type :human :player-num 1} :player2 {:piece "O" :type :computer :player-num 2})
@@ -107,5 +117,6 @@
 					target (slurp (.getCanonicalPath (io/file "./tictactoe/ttt.html")))]
 			(should= :playing (get @manager/game :status))
 			(should= [0 1 2 3] (get @manager/game :board))
-			(should-contain target (slurp (:body response)))))
+			;(should-contain target (slurp (:body response)))
+			(should-contain :re-route (keys response))))
 	)

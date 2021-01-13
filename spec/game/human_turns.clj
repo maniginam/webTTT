@@ -20,7 +20,8 @@
 				(should= "X" (nth (:board game) 4))
 				(should= "O" (nth (:board game) 0))
 				(should-not (:game-over game))
-				(should-contain target (slurp (:body response)))))
+				;(should-contain target (slurp (:body response)))
+				(should-contain :re-route (keys response))))
 
 		(it "player1 wins"
 			(swap! manager/game assoc :status :playing :current-player :player1 :board ["X" "X" 2 3 4 5 6 7 8] :player1 {:type :human :piece "X" :player-num 1} :player2 {:type :human :piece "O" :player-num 2})
@@ -31,7 +32,8 @@
 				(should= 1 (:winner game))
 				(should= "X" (nth (:board game) 2))
 				(should= :game-over (:status game))
-				(should-contain target (slurp (:body response)))))
+				;(should-contain target (slurp (:body response)))
+				(should-contain :re-route (keys response))))
 
 		)
 	)

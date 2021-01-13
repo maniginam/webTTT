@@ -3,7 +3,8 @@
 						[responders.ttt-responder :as ttt-responder])
 	(:import (httpServer Server HttpConnectionFactory)
 					 (server Router SocketHost)
-					 (java.net Socket)))
+					 (java.net Socket)
+					 (java.util List)))
 
 (def server-atom (atom nil))
 (def socket-atom (atom nil))
@@ -51,18 +52,20 @@
 						:else (recur (rest options) opts (first (rest options)))))))
 
 (defn -main [& options]
-	(Server/submitArgs options)
-	(let [args (Server/makeArgMap options)
-				port (get args "-p" 1234)
-				root (get args "-r" "tictactoe")]
-		(reset! ttt-responder/root root)
-		(start-server port root)))
-;(let [opts (split-options options)]
-;	(println "Running on port " (:port opts))
-;	(println "Serving from: " (:root opts))
-;	(reset! root (:root opts))
-;	(reset! port (:port opts))
-;	(reset! console (keyword (:console opts)))
-;	(swap! manager/game assoc :console @console)
-;	(start-server @port @root)))
+	(println "options: " options)
+	;(Server/submitArgs options)
+;	(let [args (Server/makeArgMap (list "-p" "1234"))
+;				port (get args "-p" 1234)
+;				root (get args "-r" "tictactoe")]
+;		(reset! ttt-responder/root root)
+;		(start-server port root)))
+(let [opts (split-options options)]
+	(println "Running on port " (:port opts))
+	(println "Serving from: " (:root opts))
+	(reset! root (:root opts))
+	(reset! port (:port opts))
+	(reset! ttt-responder/root root)
+	;(reset! console (keyword (:console opts)))
+	;(swap! manager/game assoc :console @console)
+	(start-server @port @root)))
 
