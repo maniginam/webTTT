@@ -3,9 +3,10 @@
 						[clojure.java.io :as io]
 						[clojure.string :as str]
 						[game.game-manager :as manager]
-						[html.game-writer :as writer]
+						[html.game-writer :as writer]                         ;multimethod
 						[html.core :as std]
 						[server.starter :as starter]
+						[spec-helper :as helper]
 						[speclj.core :refer :all]))
 
 (def head (str "<link rel=\"stylesheet\" type=\"text/css\" href=\"/html/css/main.css\">"))
@@ -60,7 +61,7 @@
 
 	(context "draws game in play:"
 		(before (starter/start-server 1986 "tictactoe"))
-		(after (starter/stop))
+		(after (helper/stop))
 
 		(it "for win"
 			(swap! manager/game assoc :status :playing :board ["X" 1 2 3 4 5 6 7 8]

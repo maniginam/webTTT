@@ -3,17 +3,14 @@
 						[clojure.java.io :as io]
 						[game.game-manager :as manager]
 						[server.starter :as starter]
+						[spec-helper :as helper]
 						[speclj.core :refer :all]))
 
 	(describe "Connection to Server"
 
-		(it "splits options"
-			(should= {:help "-h" :config "-x" :port 1518 :root "hello"}
-							 (starter/split-options (into-array ["-h" "-x" "-p" "1518" "-r" "hello"]))))
-
 		(context "responds with ttt index.html for"
 			(before (starter/start-server 1518 "tictactoe"))
-			(after (starter/stop))
+			(after (helper/stop))
 
 			(it "blank request"
 				(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/index.html")))

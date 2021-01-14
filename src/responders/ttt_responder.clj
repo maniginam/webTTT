@@ -46,42 +46,30 @@
 						entry (extract-game-entry requestMap)]
 				(assoc requestMap :entry entry)))))
 
-(defn send-new-request [request]
-	(let [request-string (str "http://" (:Host request) (get file-map (:status @manager/game)))]
-		(update-game-response request)
-		))
-
 (defn not-home-parse [requestMap]
 	(let [parsed-request (parse-request-for-game requestMap)]
-		(manager/manage-game parsed-request)
-		;(update-game-response parsed-request)
-		;(send-new-request requestMap)
-		))
+		(manager/manage-game parsed-request)))
 
 (defn home-no-parse [requestMap]
 	(let [request (assoc requestMap :entry nil)]
-		(manager/manage-game request)
-		;(update-game-response request)
-		;(send-new-request request)
-		))
+		(manager/manage-game request)))
 
 (defn home? [resource]
 	(or (nil? resource) (= "/ttt" resource)))
 
-(defn set-response-for-reroute [request-map]
-	{"re-route" "true"
-	 "method"   "GET"
-	 "resource" (str (get file-map (:status @manager/game)))
-	 "Host"     (get request-map :Host)
-	 "httpVersion"	"HTTP/1.1"})
+(defn set-new-request-for-reroute [request-map]
+	{"re-route"    "true"
+	 "method"      "GET"
+	 "resource"    (str (get file-map (:status @manager/game)))
+	 "Host"        (get request-map :Host)
+	 "httpVersion" "HTTP/1.1"})
 
 (defn create-response-map [request]
-	(let [request-map (expand-java-map request)
-				response-map (if (home? (:resource request-map))
-
-											 (home-no-parse request-map)
-											 (not-home-parse request-map))]
-		(set-response-for-reroute request-map)))
+	(let [request-map (expand-java-map request)]
+		(if (home? (:resource request-map))
+			(home-no-parse request-map)
+			(not-home-parse request-map))
+		(set-new-request-for-reroute request-map)))
 
 (deftype TTTResponder []
 	Responder
