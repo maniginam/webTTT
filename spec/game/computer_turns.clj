@@ -13,11 +13,9 @@
 	(context "plays"
 		(it "round 1 of game"
 			(swap! manager/game assoc :status :board-setup :board helper/empty-board :player2 {:type :human})
-			(let [router (new Router)
-						request (assoc helper/request-map "resource" "/ttt/setup?board-size=3")
+			(let [request (assoc helper/request-map "resource" "/ttt/setup?board-size=3")
 						response (walk/keywordize-keys (responder/create-response-map request))
-						game @manager/game
-						target (slurp (.getCanonicalPath (io/file "./tictactoe/ttt.html")))]
+						game @manager/game]
 				(should= :playing (:status game))
 				(should= :player2 (:current-player game))
 				(should= 1 (count (filter #(= "X" %) (:board game))))

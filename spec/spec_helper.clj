@@ -19,7 +19,7 @@
 (defn stop []
 	(assert @starter/server-atom "no server running")
 	(.end (:host @starter/server-atom))
-	(.close @starter/socket-atom)
+	;(.close @starter/socket-atom)
 	(reset! starter/server-atom nil)
-	(reset! starter/socket-atom nil)
+	;(reset! starter/socket-atom nil)
 	(Thread/sleep 100))

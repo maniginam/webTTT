@@ -3,8 +3,9 @@
 						[clojure.string :as str]
 						[game.game-manager :as manager]
 						[clj-http.client :as client])
-	(:import (server Responder)
-					 (httpServer FileResponder)))
+	(:import (server Responder)))
+
+(def snack-shop (clj-http.cookies/cookie-store))
 
 (def root (atom (str (.getCanonicalPath (io/file "./tictactoe")))))
 
@@ -37,6 +38,7 @@
 		entry-map))
 
 (defn parse-request-for-game [request]
+	(println "request: " request)
 	(let [crude-resource (:resource request)
 				split-resource (remove empty? (str/split crude-resource #"/"))]
 		(when (> (count split-resource) 1)
@@ -46,9 +48,15 @@
 						entry (extract-game-entry requestMap)]
 				(assoc requestMap :entry entry)))))
 
+(defn check-for-cookies [requestMap]
+	(when (contains? requestMap :cookie)
+		(last (str/split (:cookie requestMap) #"="))))
+
 (defn not-home-parse [requestMap]
-	(let [parsed-request (parse-request-for-game requestMap)]
-		(manager/manage-game parsed-request)))
+	(let [parsed-request (parse-request-for-game requestMap)
+				gameID (check-for-cookies requestMap)]
+		(println "gameID: " gameID)
+		(manager/manage-game (assoc parsed-request :gameID gameID))))
 
 (defn home-no-parse [requestMap]
 	(let [request (assoc requestMap :entry nil)]
@@ -57,19 +65,27 @@
 (defn home? [resource]
 	(or (nil? resource) (= "/ttt" resource)))
 
-(defn set-new-request-for-reroute [request-map]
-	{"re-route"    "true"
-	 "method"      "GET"
-	 "resource"    (str (get file-map (:status @manager/game)))
-	 "Host"        (get request-map :Host)
-	 "httpVersion" "HTTP/1.1"})
+(defn maybe-add-cookie [new-map game]
+	(if (nil? (:gameID game))
+		new-map
+		(assoc new-map "cookie" (str "snickerdoodle=" (:gameID game)))))
+
+(defn set-new-request-for-reroute [request-map game]
+	(let [new-map {"re-route"    "true"
+								 "method"      "GET"
+								 "resource"    (str (get file-map (:status game)))
+								 "Host"        (get request-map :Host)
+								 "httpVersion" "HTTP/1.1"}
+				map-to-send (maybe-add-cookie new-map game)]
+		map-to-send))
+
 
 (defn create-response-map [request]
-	(let [request-map (expand-java-map request)]
-		(if (home? (:resource request-map))
-			(home-no-parse request-map)
-			(not-home-parse request-map))
-		(set-new-request-for-reroute request-map)))
+	(let [request-map (expand-java-map request)
+				game (if (home? (:resource request-map))
+							 (home-no-parse request-map)
+							 (not-home-parse request-map))]
+		(set-new-request-for-reroute request-map game)))
 
 (deftype TTTResponder []
 	Responder
