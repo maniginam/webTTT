@@ -7,14 +7,15 @@
 						[speclj.core :refer :all]
 						[clojure.string :as string]
 						[master.core :as tcore]
-						[master.game-master :as game])
+						[master.game-master :as game]
+						[clojure.string :as str])
 	(:import (server Router)))
 
 (defn set-request [box cookie]
 	{:httpVersion "HTTP/1.1"
 	 :resource (str "/ttt/playing/box=" box)
 	 :method "GET"
-	 :cookie (str "snickerdoodle=" cookie)}
+	 :cookie (str "bdaycakeoreo=" cookie)}
   )
 
 (describe "Cookies"
@@ -31,6 +32,12 @@
 	(let [request (assoc helper/request-map "resource" "/ttt/setup?board-size=3")
 				response (walk/keywordize-keys (responder/create-response-map request))]
 		(should (int? (Integer/parseInt (last (string/split (:cookie response) #"=")))))))
+
+	(it "initiates game at waiting"
+		(swap! manager/game assoc :console :web :status :waiting)
+		(let [request (assoc helper/request-map "resource" "/ttt/setup")
+					response (walk/keywordize-keys (responder/create-response-map request))]
+			(should (int (Integer/parseInt (last (str/split (:cookie response) #"=")))))))
 
 	(it "plays two separate games"
 		(let [game1 (assoc @manager/game :console :web :status :playing
@@ -49,14 +56,10 @@
 					game2request1 (set-request 0 cookie2)
 					game1request2 (set-request 4 cookie1)
 					game2request2 (set-request 2 cookie2)
-					response11 (responder/not-home-parse game1request1)
-					turn11 		(tcore/save-turn (assoc game1 :box-played 0 :board [0 1 2 3]))
-					response21 (responder/not-home-parse game2request1)
-					turn21 		(tcore/save-turn (assoc game2 :box-played 0 :board ["X" 1 2 3 "O" 5 6 7 8]))
-					response12 (responder/not-home-parse game1request2)
-					turn12 		(tcore/save-turn (assoc game1 :box-played 4 :board ["X" 1 2 3]))
-					response22 (responder/not-home-parse game2request2)
-					turn22 		(tcore/save-turn (assoc game2 :box-played 2 :baord ["X" "O" "X" 3 "O" 5 6 7 8]))]
+					response11 (responder/prep-for-game game1request1)
+					response21 (responder/prep-for-game game2request1)
+					response12 (responder/prep-for-game game1request2)
+					response22 (responder/prep-for-game game2request2)]
 
 			(should= ["X" 1 2 3 4 5 6 7 8] (:board response11))
 			(should= ["X" 1 2 3 "O" 5 6 7 8] (:board response21))

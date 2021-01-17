@@ -8,14 +8,14 @@
 	(:import (server Router)))
 
 (describe "Computer"
-	(before (reset! manager/game helper/default-game))
 
 	(context "plays"
 		(it "round 1 of game"
-			(swap! manager/game assoc :status :board-setup :board helper/empty-board :player2 {:type :human})
-			(let [request (assoc helper/request-map "resource" "/ttt/setup?board-size=3")
+			(swap! manager/games assoc 1 (assoc helper/default-game :gameID 1 :status :board-setup :board helper/empty-board :player2 {:type :human :piece "X" :player-num 2} :player2 {:type :human :piece "O" :player-num 1}))
+			(let [request (assoc helper/request-map "resource" "/ttt/setup?board-size=3" "cookies" "oreo=1")
 						response (walk/keywordize-keys (responder/create-response-map request))
-						game @manager/game]
+						game (:game (responder/prep-for-game request))]
+				(println "game: " game)
 				(should= :playing (:status game))
 				(should= :player2 (:current-player game))
 				(should= 1 (count (filter #(= "X" %) (:board game))))

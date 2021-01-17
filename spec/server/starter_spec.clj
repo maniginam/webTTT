@@ -16,7 +16,8 @@
 				(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/index.html")))
 							response (client/get "http://localhost:1518")]
 					(should-contain starter/server-name (get (:headers response) "Server"))
-					(should= target, (:body response))))
+					(should= target, (:body response))
+					(should= 1 (get (:cookie response) :gameID))))
 
 			(it "/ request"
 				(let [target (slurp (.getCanonicalPath (io/file "./tictactoe/index.html")))
