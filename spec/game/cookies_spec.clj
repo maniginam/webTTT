@@ -15,37 +15,37 @@
 	{:httpVersion "HTTP/1.1"
 	 :resource (str "/ttt/playing/box=" box)
 	 :method "GET"
-	 :cookie (str "bdaycakeoreo=" cookie)}
+	 :cookie (str "oreo=" cookie)}
   )
 
 (describe "Cookies"
-	(before (reset! manager/game helper/default-game))
+	;(before (reset! manager/game helper/default-game))
 
 		(it "for rex"
-			(swap! manager/game assoc :gameID "rex")
+			;(swap! manager/game assoc :gameID "rex")
 			(let [request (assoc helper/request-map "resource" "/ttt/setup?board-size=3")
 						response (walk/keywordize-keys (responder/create-response-map request))]
-				(should= "snickerdoodle=rex" (:cookie response))))
+				(should (int? (Integer/parseInt (last (str/split (:cookie response) #"=")))))))
 
 (it "contain gameID"
-	(swap! manager/game assoc :console :web :status :board-setup)
+	;(swap! manager/game assoc :console :web :status :board-setup)
 	(let [request (assoc helper/request-map "resource" "/ttt/setup?board-size=3")
 				response (walk/keywordize-keys (responder/create-response-map request))]
-		(should (int? (Integer/parseInt (last (string/split (:cookie response) #"=")))))))
+		(should (int? (Integer/parseInt (last (str/split (:cookie response) #"=")))))))
 
 	(it "initiates game at waiting"
-		(swap! manager/game assoc :console :web :status :waiting)
+		;(swap! manager/game assoc :console :web :status :waiting)
 		(let [request (assoc helper/request-map "resource" "/ttt/setup")
 					response (walk/keywordize-keys (responder/create-response-map request))]
-			(should (int (Integer/parseInt (last (str/split (:cookie response) #"=")))))))
+			(should (int? (Integer/parseInt (last (str/split (:cookie response) #"=")))))))
 
 	(it "plays two separate games"
-		(let [game1 (assoc @manager/game :console :web :status :playing
+		(let [game1 (assoc manager/default-game :console :web :status :playing
 																		:current-player :player1
 																		:player1 {:type :human :piece "X" :player-num 1}
 																		:player2 {:type :human :piece "O" :player-num 2}
 																		:board [0 1 2 3])
-					game2 (assoc @manager/game :console :web :status :playing
+					game2 (assoc manager/default-game :console :web :status :playing
 																		:current-player :player1
 																		:player1 {:type :human :piece "X" :player-num 1}
 																		:player2 {:type :computer :piece "O" :player-num 2}

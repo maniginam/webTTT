@@ -64,10 +64,10 @@
 		(after (helper/stop))
 
 		(xit (it "for win"
-			(swap! manager/game assoc :status :playing :board ["X" 1 2 3 4 5 6 7 8]
-						 :current-player :player2 :users 2
-						 :player1 {:type :human :piece "X"}
-						 :player2 {:type :human :piece "O"})
+			;(swap! manager/game assoc :status :playing :board ["X" 1 2 3 4 5 6 7 8]
+			;			 :current-player :player2 :users 2
+			;			 :player1 {:type :human :piece "X"}
+			;			 :player2 {:type :human :piece "O"})
 			(let [response-body-lines (str/split (:body (client/get "http://localhost:1986/ttt/playing/box=2")) #"\n")]
 				(should-contain "<line x1=\"11.0%\" y1=\"11.0%\" x2=\"29.0%\" y2=\"29.0%\" stroke=\"coral\" stroke-width=\"30\" stroke-linecap=\"round\"/>" response-body-lines)
 				(should-contain "<line x1=\"29.0%\" y1=\"11.0%\" x2=\"11.0%\" y2=\"29.0%\" stroke=\"coral\" stroke-width=\"30\" stroke-linecap=\"round\"/>" response-body-lines)

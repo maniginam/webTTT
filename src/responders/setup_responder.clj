@@ -17,11 +17,11 @@
 ;	)
 ;
 ;(defmethod rcore/respond :setup [request]
-;	;(if (= :waiting (:status @manager/game))
+;	;(if (= :waiting (:status game))
 ;		;(manager/manage-game nil)
 ;		(extract-game request)
 ;	;)
-;	(let [game @manager/game
+;	(let [game game
 ;				body (slurp (str (:root request) (get file-map (:status game))))
 ;				size (count body)
 ;				response {"Server"         (:server-name request)

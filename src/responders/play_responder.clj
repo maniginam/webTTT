@@ -9,17 +9,17 @@
 ;						[responders.core :as rcore]))
 ;
 ;(defn play-turn [resource]
-;	(if (not (game/ai-turn? @manager/game))
+;	(if (not (game/ai-turn? game))
 ;		(let [box (Integer/parseInt (last (str/split resource #"=")))]
-;			(reset! manager/game (game/update-game-with-move! @manager/game box))
-;			(reset! manager/game (game/update-state @manager/game))
-;			(if (= :game-over (:status @manager/game)) (html.core/write! @manager/game)))
-;		(while (and (not (game/game-over? @manager/game)) (game/ai-turn? @manager/game))
-;			(reset! manager/game (game/update-state @manager/game)))))
+;			(reset! manager/game (game/update-game-with-move! game box))
+;			(reset! manager/game (game/update-state game))
+;			(if (= :game-over (:status game)) (html.core/write! game)))
+;		(while (and (not (game/game-over? game)) (game/ai-turn? game))
+;			(reset! manager/game (game/update-state game)))))
 ;
 ;(defmethod rcore/respond :playing [request]
 ;	(play-turn (:resource request))
-;	(let [body (if (= :playing (:status @manager/game))
+;	(let [body (if (= :playing (:status game))
 ;							 (slurp (str (:root request) "/ttt.html"))
 ;							 (slurp (str (:root request) "/game-over.html")))
 ;				size (count body)

@@ -4,102 +4,95 @@
 						[game.game-manager :as manager]
 						[responders.ttt-responder :as responder]
 						[speclj.core :refer :all]
-						[spec-helper :as helper]))
+						[spec-helper :as helper]
+						[clojure.string :as str]))
+
+(def testID (atom 0))
 
 (describe "Game Setup"
-	(before (reset! manager/game helper/default-game))
+	;(before (reset! manager/game helper/default-game))
 
 	(context "Continue last game?"
 		(it "isn't allowed due to completed last-game"
-			(reset! manager/gameNum 0)
-			(swap! manager/games assoc 1 (assoc helper/default-game :status :waiting :last-game {:status :game-over :board ["X" "X" "X" "X"]}))
-			(let [request (assoc helper/request-map "resource" "/ttt/setup")
-						response (walk/keywordize-keys (responder/create-response-map request))]
-				(should= 1 (:gameNum @manager/game))
-				(should= :user-setup (:status @manager/game))
-				(should= :user-setup (get @manager/games 0))
-				(should= 1 @manager/gameNum)
-				(should-contain :re-route (keys response))
-				(should= "oreo=1" (:cookies response))))
+			(reset! manager/games {-3141 (assoc manager/default-game :status :waiting :gameID -3141 :cookie -3141)})
+			(let [request (assoc manager/default-game :responder :setup :entry nil :status :waiting :last-game {:status :game-over :board ["X"]} :gameID -3141)
+						game (manager/manage-game request)]
+				(should= :user-setup (:status game))))
 
 		(it "no"
-			(swap! manager/game assoc :status :restart? :last-game {:status :playing :board [0 1 2 3]})
-			(let [request (assoc helper/request-map "resource" "/ttt/setup/continue=no")
-						response (walk/keywordize-keys (responder/create-response-map request))]
-				(should= :user-setup (:status @manager/game))
-				(should-contain :re-route (keys response))))
+			(reset! manager/games {-3141 (assoc manager/default-game :status :restart? :gameID -3141 :cookie -3141  :last-game {:status :playing :board [0]})})
+			(let [request (assoc manager/default-game :responder :setup :entry {:continue "no"} :status :restart? :last-game {:status :playing :board [0]} :gameID -3141)
+						game (manager/manage-game request)]
+				(should= :user-setup (:status game))))
 
 		(it "yes"
-			(swap! manager/game assoc :status :restart? :console :web :last-game {:status :playing :board [0 1 2 3] :console :web :current-player :player1 :player1 {:player-num 1 :piece "X" :type :human}})
-			(let [request (assoc helper/request-map "resource" "/ttt/setup/continue=yes")
-						response (walk/keywordize-keys (responder/create-response-map request))]
-				(should= :playing (:status @manager/game))
-				(should-contain :re-route (keys response))))
+			(reset! manager/games {-3141 (assoc manager/default-game :status :restart? :gameID -3141 :cookie -3141 :last-game {:status :playing :board [0]})})
+			(let [request (assoc manager/default-game :responder :setup :entry {:continue "yes"} :status :restart? :last-game {:status :playing :board [0]} :gameID -3141)
+						game (manager/manage-game request)]
+				(should= :playing (:status game))
+				(should= [0] (:board game))))
 		)
 
-
 	(it "starts setup"
-		(swap! manager/game assoc :status :waiting :last-game {:status :playing :board [0 "X" 2 3 4 5 6 7 8]})
-		(let [request (assoc helper/request-map "resource" "/ttt/setup")
-					response (walk/keywordize-keys (responder/create-response-map request))]
-			(should= :restart? (:status @manager/game))
-			(should-contain :re-route (keys response))))
+		(reset! manager/gameID -10320)
+		(let [request (assoc helper/request-map "responder" "setup" "resource" "/ttt/setup")
+					response (walk/keywordize-keys (responder/create-response-map request))
+					game (get @manager/games -10319)]
+			(should (or (= :restart? (:status game)) (= :user-setup (:status game))))
+			(should-contain :re-route (keys response))
+			(should-contain :cookie (keys response))))
 
 	(context "sets user-count with"
 		(it "0 humans"
-			(swap! manager/game assoc :status :user-setup)
-			(let [request (assoc helper/request-map "resource" "/ttt/setup?users=0")
-						response (walk/keywordize-keys (responder/create-response-map request))]
-				(should= 0 (:users @manager/game))
-				(should-contain :re-route (keys response))))
+			(reset! manager/games {-3141 (assoc manager/default-game :status :user-setup :gameID -3141 :cookie -3141)})
+			(let [request (assoc manager/default-game :responder :setup :entry {:users "0"} :status :user-setup :users 1 :gameID -3141)
+						game (manager/manage-game request)]
+				(should= :level-setup (:status game))
+				(should= 0 (:users game))))
 
 		(it "1 humans"
-			(swap! manager/game assoc :status :user-setup)
-			(let [request (assoc helper/request-map "resource" "/ttt/setup?users=1")
-						response (walk/keywordize-keys (responder/create-response-map request))]
-				(should= 1 (:users @manager/game))
-				(should-contain :re-route (keys response))))
+			(reset! manager/games {-3141 (assoc manager/default-game :status :user-setup :gameID -3141 :cookie -3141)})
+			(let [request (assoc manager/default-game :responder :setup :entry {:users "1"} :status :user-setup :users 1 :gameID -3141)
+						game (manager/manage-game request)]
+				(should= :player-setup (:status game))
+				(should= 1 (:users game))))
 
 		(it "2 humans"
-			(swap! manager/game assoc :status :user-setup)
-			(let [request (assoc helper/request-map "resource" "/ttt/setup?users=2")
-						response (walk/keywordize-keys (responder/create-response-map request))]
-				(should= 2 (:users @manager/game))
-				(should-contain :re-route (keys response))))
+			(reset! manager/games {-3141 (assoc manager/default-game :status :user-setup :gameID -3141 :cookie -3141)})
+			(let [request (assoc manager/default-game :responder :setup :entry {:users "2"} :status :user-setup :users 1 :gameID -3141)
+						game (manager/manage-game request)]
+				(should= :board-setup (:status game))
+				(should= 2 (:users game))))
 		)
-
 
 	(context "sets players"
 		(it "human is X"
-			(reset! manager/game manager/default-game)
-			(swap! manager/game assoc :users 1 :status :player-setup)
-			(let [request (assoc helper/request-map "resource" "/ttt/setup?piece=X")
-						response (walk/keywordize-keys (responder/create-response-map request))]
-				(should= :human (get (:player1 @manager/game) :type))
-				(should= :computer (get (:player2 @manager/game) :type))
-				(should-contain :re-route (keys response))))
+			(reset! manager/games {-3141 (assoc manager/default-game :status :player-setup :users 1 :gameID -3141 :cookie -3141)})
+			(reset! manager/games {-3141 (assoc manager/default-game :status :player-setup :users 1 :gameID -3141 :cookie -3141)})
+			(let [request (assoc manager/default-game :responder :setup :entry {:piece "X"} :status :player-setup :users 1 :gameID -3141)
+						game (manager/manage-game request)]
+				(should= :human (get (:player1 game) :type))
+				(should= :computer (get (:player2 game) :type))))
 
 		(it "human is O"
-			(swap! manager/game assoc :users 1 :status :player-setup)
-			(let [request (assoc helper/request-map "resource" "/ttt/setup?piece=O")
-						response (walk/keywordize-keys (responder/create-response-map request))]
-				(should= :human (get (:player2 @manager/game) :type))
-				(should= :computer (get (:player1 @manager/game) :type))
-				(should-contain :re-route (keys response))))
+			(reset! manager/games {-3141 (assoc manager/default-game :status :player-setup :users 1 :gameID -3141 :cookie -3141)})
+			(let [request (assoc manager/default-game :responder :setup :entry {:piece "O"} :status :player-setup :users 1 :gameID -3141)
+						game (manager/manage-game request)]
+				(println "HUMAN IS O game: " game)
+				(should= :human (get (:player2 game) :type))
+				(should= :computer (get (:player1 game) :type))))
 		)
 
 	(it "sets level"
-		(swap! manager/game assoc :status :level-setup)
-		(let [request (assoc helper/request-map "resource" "/ttt/setup?level=easy")
-					response (walk/keywordize-keys (responder/create-response-map request))]
-			(should= :easy (get @manager/game :level))
-			(should-contain :re-route (keys response))))
+		(reset! manager/games {-3141 (assoc manager/default-game :status :level-setup :users 1 :gameID -3141 :cookie -3141)})
+		(let [request (assoc manager/default-game :responder :setup :entry {:level :easy} :status :level-setup :users 1 :gameID -3141)
+					game (manager/manage-game request)]
+			(should= :easy (get game :level))))
 
 	(it "sets board"
-		(swap! manager/game assoc :console :web :status :board-setup :users 2 :level :easy :player1 {:piece "X" :type :human :player-num 1} :player2 {:piece "O" :type :computer :player-num 2})
-		(let [request (assoc helper/request-map "resource" "/ttt/setup?board-size=2")
-					response (walk/keywordize-keys (responder/create-response-map request))]
-			(should= :playing (get @manager/game :status))
-			(should= [0 1 2 3] (get @manager/game :board))
-			(should-contain :re-route (keys response))))
+		(swap! manager/games assoc -3141 (assoc manager/default-game :status :board-setup :users 1 :gameID -3141 :cookie -3141 :current-player :player1 :player1 {:piece "X" :player-num 1 :type :human} :player2 {:piece "O" :player-num 2 :type :human}))
+		(let [request (assoc manager/default-game :responder :setup :entry {:board-size "2"} :status :board-setup :users 1 :gameID -3141)
+					game (manager/manage-game request)]
+			(should= :playing (get game :status))
+			(should= [0 1 2 3] (get game :board))))
 	)
