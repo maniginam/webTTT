@@ -78,7 +78,6 @@
 			(reset! manager/games {-3141 (assoc manager/default-game :status :player-setup :users 1 :gameID -3141 :cookie -3141)})
 			(let [request (assoc manager/default-game :responder :setup :entry {:piece "O"} :status :player-setup :users 1 :gameID -3141)
 						game (manager/manage-game request)]
-				(println "HUMAN IS O game: " game)
 				(should= :human (get (:player2 game) :type))
 				(should= :computer (get (:player1 game) :type))))
 		)

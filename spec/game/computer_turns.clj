@@ -16,7 +16,6 @@
 			(let [request (assoc helper/request-map "resource" "/ttt/setup?board-size=3" "cookies" "oreo=1")
 						response (walk/keywordize-keys (responder/create-response-map request))
 						game (manager/manage-game request)]
-				(println "game: " game)
 				(should= :playing (:status game))
 				(should= :player2 (:current-player game))
 				(should= 1 (count (filter #(= "X" %) (:board game))))

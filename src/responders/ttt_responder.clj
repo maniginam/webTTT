@@ -28,10 +28,8 @@
 		entry-map))
 
 (defn eat-cookies [request]
-	(println "(:Cookie request): " (:Cookie request))
 	(when (.contains (keys request) :Cookie)
 		(let [cookie (str/split (nth (str/split (:Cookie request) #"\; ") 2) #"=")]
-			(println "cookie: " cookie)
 			(Integer/parseInt (last cookie)))))
 
 (defn parse-request-for-game [request]
@@ -57,8 +55,6 @@
 		(send-request-to-game (parse-request-for-game request))))
 
 (defn set-new-request-for-reroute [request]
-	(println "(:gameID request): " (:gameID request))
-	(println "(:resource request): " (:resource request))
 	(let [resource (:resource request)
 				cookie (when (.contains (keys request) :gameID) (str "snickerdoodle=" (:gameID request)))
 				new-request-map {"re-route"    "true"
@@ -74,7 +70,6 @@
 	(let [request-map (expand-java-map request)
 				request-with-game (prep-for-game request-map)
 		new-request (set-new-request-for-reroute request-with-game)]
-		(println "new-request: " new-request)
 		new-request))
 
 (deftype TTTResponder []

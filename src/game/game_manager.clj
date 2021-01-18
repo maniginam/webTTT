@@ -71,7 +71,6 @@
 				player1 (if (= "X" human) {:playerNum 1 :piece "X" :type :human} {:playerNum 1 :piece "X" :type :computer})
 				player2 (if (= "O" human) {:playerNum 2 :piece "O" :type :human} {:playerNum 2 :piece "O" :type :computer})
 				updated-game (assoc game :status :level-setup :player1 player1 :player2 player2)]
-		(println "PLAYER SETUP updated-game: " updated-game)
 		(save-status updated-game)))
 
 (defmethod tcore/set-parameters :level-setup [game]
@@ -79,7 +78,6 @@
 		(save-status (assoc game :level (keyword level) :status :board-setup))))
 
 (defmethod tcore/set-parameters :board-setup [game]
-	(println "BOARD game: " game)
 	(let [board-size (Integer/parseInt (:board-size (get game :entry)))
 				board (board/create-board board-size)]
 		(save-status (assoc game :board-size board-size :board board :status :ready-to-play))))
@@ -116,7 +114,6 @@
 (defn manage-game [request]
 	(let [entry (:entry request)
 				current-state-game (get-state-of-game request)]
-		(println "current-state-game: " current-state-game)
 		(cond (= :setup (:responder request)) (setup-game current-state-game entry)
 					(= :playing (:responder request)) (play-turn current-state-game entry)
 					(= :play-again (:responder request)) (assoc default-game :status :user-setup)
