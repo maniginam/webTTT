@@ -46,7 +46,10 @@
 
 (defn send-request-to-game [request]
 	(let [game (manager/manage-game request)]
-		(assoc request :resource (get file-map (:status game)) :cookie {:gameID (:gameID game) :users (:users game) :player1 (:player1 game) :player2 (:player2 game) :level (:level game) :board-size (:board-size game)})))
+		(assoc request :resource (get file-map (:status game))
+									 :cookie {:gameID (:gameID game) :users (:users game)
+														:player1 (:player1 game) :player2 (:player2 game)
+														:level (:level game) :board-size (:board-size game)})))
 
 (defn prep-for-game [request]
 	(if (home? (:resource request))

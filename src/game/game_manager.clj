@@ -30,7 +30,9 @@
 		(get @games (:gameID game))))
 
 (defmethod tcore/set-parameters :waiting [game]
-	(let [game (game/update-state game)
+	(let [game (try (game/update-state game)
+									(catch Exception e
+										(assoc default-game :status :user-setup :gameID (reset! gameID (inc @gameID)))))
 				status (if (or (nil? (:last-game game)) (game/game-over? (:last-game game)))
 								 :user-setup
 								 :restart?)
@@ -80,10 +82,12 @@
 		(let [box (Integer/parseInt (:box entry))]
 			(if (string? (nth (:board game) box))
 				game
-				(let [game-with-next-round (game/update-state (game/update-game-with-move! game box))]
-					(if (and (not (game/game-over? game-with-next-round)) (game/ai-turn? game-with-next-round))
-						(game/update-state game-with-next-round)
-						game-with-next-round))))))
+				;(let [game-with-next-round
+				(game/update-state (game/update-game-with-move! game box))))))
+;]
+;(if (and (not (game/game-over? game-with-next-round)) (game/ai-turn? game-with-next-round))
+;	(game/update-state game-with-next-round)
+;	game-with-next-round))))))
 
 (defn maybe-start! [game]
 	(if (= :ready-to-play (:status game))
@@ -95,9 +99,14 @@
 	(let [game-in-new-phase (tcore/set-parameters (assoc game :entry entry))]
 		(maybe-start! game-in-new-phase)))
 
+(defn maybe-load-last-game [request]
+	(try (tcore/load-game (merge default-game (:Cookie request)))
+			 (catch Exception e
+				 (assoc default-game :gameID (swap! gameID inc)))))
+
 (defn get-state-of-game [request]
-	(cond (nil? (:Cookie request)) (assoc default-game :gameID (swap! gameID inc))
-				(= :playing (get (:Cookie request) :status)) (tcore/load-game (merge default-game (:Cookie request)))
+	(cond (nil? (:Cookie request)) (assoc default-game :gameID (reset! gameID (inc @gameID)))
+				(= :playing (get (:Cookie request) :status)) (maybe-load-last-game request)
 				:else (:Cookie request)))
 
 (defn manage-game [request]

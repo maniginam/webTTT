@@ -34,10 +34,10 @@
 		)
 
 	(it "starts setup"
-		(reset! manager/gameID -10320)
+		(reset! manager/gameID -271828)
 		(let [request (assoc helper/request-map "responder" "setup" "resource" "/ttt/setup")
 					response (walk/keywordize-keys (responder/create-response-map request))
-					game (get @manager/games -10319)]
+					game (get @manager/games -271827)]
 			(should (or (= :restart? (:status game)) (= :user-setup (:status game))))
 			(should-contain :re-route (keys response))
 			(should-contain :cookie (keys response))))
