@@ -15,7 +15,7 @@
 									 :current-player :player1
 									 :player1        {:player-num 1 :piece "X" :type :computer}
 									 :player2        {:player-num 2 :piece "O" :type :computer}})
-;(def game (atom default-game))
+
 (def games (atom {}))
 (def gameID (atom 0))
 
@@ -38,9 +38,9 @@
 		(save-status new-game)))
 
 (defn continue-last-game! [game]
-		;; TODO - GLM : MAYBE UPDATE GAME
-		(tcore/draw-state game)
-		game)
+	;; TODO - GLM : MAYBE UPDATE GAME
+	(tcore/draw-state game)
+	game)
 
 (defmethod tcore/set-parameters :restart? [game]
 	(let [play-last-game? (:continue (get game :entry))]
@@ -48,23 +48,15 @@
 			(save-status (assoc game :status :user-setup))
 			(continue-last-game! (assoc (:last-game game) :console :web)))))
 
-(defn new-status-based-on-users [game users]
+(defn new-status-based-on-users [users]
 	(cond (zero? users) :level-setup
 				(= 1 users) :player-setup
 				(= 2 users) :board-setup))
 
 (defmethod tcore/set-parameters :user-setup [game]
 	(let [users (Integer/parseInt (:users (get game :entry)))
-				status (new-status-based-on-users game users)]
-		(save-status (assoc game :status status :users users))))
-
-(defn set-players [game]
-	(let [users (:users game)
-				saved-game (get @games (:gameID game))
-				game (cond (zero? users) (swap! games assoc (:gameID game) (assoc saved-game :status :level-setup :player1 {:type :computer :piece "X" :player-num 1} :player2 {:type :computer :piece "O" :player-num 2}))
-									 (= 2 users) (swap! games assoc (:gameID game) (assoc saved-game :status :board-setup :player1 {:type :human :piece "X" :player-num 1} :player2 {:type :human :piece "O" :player-num 2}))
-									 :else (swap! games assoc (:gameID game) (assoc saved-game :status :player-setup)))]
-		game))
+				status (new-status-based-on-users users)]
+		(assoc game :status status :users users)))
 
 (defmethod tcore/set-parameters :player-setup [game]
 	(let [human (:piece (get game :entry))
@@ -83,33 +75,30 @@
 		(save-status (assoc game :board-size board-size :board board :status :ready-to-play))))
 
 (defn play-turn [game entry]
-	(if (not (game/ai-turn? game))
+	(if (game/ai-turn? game)
+		(game/update-state game)
 		(let [box (Integer/parseInt (:box entry))]
 			(if (string? (nth (:board game) box))
 				game
 				(let [game-with-next-round (game/update-state (game/update-game-with-move! game box))]
-					(if (and (not (game/game-over? game)) (game/ai-turn? game))
+					(if (and (not (game/game-over? game-with-next-round)) (game/ai-turn? game-with-next-round))
 						(game/update-state game-with-next-round)
 						game-with-next-round))))))
-;********************************************below is loop for comp v comp
-;(loop [game game]
-;	(if (or (game/game-over? game) (not (game/ai-turn? game)))
-;		game
-;		(recur (game/update-state game)))))))))
+
+(defn maybe-start! [game]
+	(if (= :ready-to-play (:status game))
+		(let [ready-game (assoc (merge default-game game) :status :playing)]
+			(game/update-state ready-game))
+		game))
 
 (defn setup-game [game entry]
 	(let [game-in-new-phase (tcore/set-parameters (assoc game :entry entry))]
-		(if (= :ready-to-play (:status game-in-new-phase))
-			(game/update-state game-in-new-phase)
-			game-in-new-phase)))
+		(maybe-start! game-in-new-phase)))
 
 (defn get-state-of-game [request]
-	(if (nil? (:gameID request))
-		(assoc default-game :gameID (swap! gameID inc))
-		(let [game (get @games (:gameID request))]
-			(if (= :playing (:status game))
-				(tcore/load-game game)
-				game))))
+	(cond (nil? (:Cookie request)) (assoc default-game :gameID (swap! gameID inc))
+				(= :playing (get (:Cookie request) :status)) (tcore/load-game (merge default-game (:Cookie request)))
+				:else (:Cookie request)))
 
 (defn manage-game [request]
 	(let [entry (:entry request)

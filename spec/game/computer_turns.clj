@@ -1,60 +1,38 @@
 (ns game.computer-turns
-	(:require [clojure.java.io :as io]
-						[clojure.walk :as walk]
-						[game.game-manager :as manager]
-						[responders.ttt-responder :as responder]
+	(:require [game.game-manager :as manager]
 						[spec-helper :as helper]
-						[speclj.core :refer :all]
-						[clojure.string :as str])
-	(:import (server Router)))
+						[speclj.core :refer :all]))
 
 (describe "Computer"
 
 	(context "plays"
 		(it "round 1 of game"
-			;(swap! manager/games assoc 1 (assoc helper/default-game :gameID 1 :status :board-setup :board helper/empty-board :player2 {:type :human :piece "X" :player-num 2} :player2 {:type :human :piece "O" :player-num 1}))
-			(let [request (assoc helper/request-map "resource" "/ttt/setup?board-size=3" "cookies" "oreo=1")
-						response (walk/keywordize-keys (responder/create-response-map request))
-						game (manager/manage-game request)]
+			(reset! helper/mock-move 0)
+			(let [ready-game (assoc helper/default-cookie :status :ready-to-play)
+						game (manager/maybe-start! ready-game)]
 				(should= :playing (:status game))
 				(should= :player2 (:current-player game))
 				(should= 1 (count (filter #(= "X" %) (:board game))))
-				(should-not (:game-over game))
-				(should-contain :re-route (keys response))))
+				(should-not (:game-over game))))
 
 		(it "vs computer for cat's game"
-			;(swap! manager/game assoc :status :playing :board ["X" 1 "O" "O" "O" "X" "X" "O" "X"]
-			;			 :current-player :player1 :users 0)
-			(let [request (assoc helper/request-map "resource" "/ttt/playing/box=1")
-						response (walk/keywordize-keys (responder/create-response-map request))
-						game (manager/manage-game request)
-						target (slurp (.getCanonicalPath (io/file "./tictactoe/game-over.html")))]
+			(reset! helper/mock-move 1)
+			(reset! helper/games {-3141 (assoc helper/default-game :status :playing :board ["X" 1 "O" "O" "O" "X" "X" "O" "X"])})
+			(let [request-for-play {:responder :playing :Cookie (merge helper/default-game (assoc helper/default-cookie :status :playing))}
+						game (manager/manage-game request-for-play)]
 				(should= :player2 (:current-player game))
 				(should= ["X" "X" "O" "O" "O" "X" "X" "O" "X"] (:board game))
 				(should= :game-over (:status game))
-				(should= 0 (:winner game))
-				(should-contain :re-route (keys response))
-				;(should-contain target (slurp (:body response)))
-				))
+				(should= 0 (:winner game))))
 
 		(it "to block a winning move"
-			;(swap! manager/game assoc
-			;			 :status :playing
-			;			 :users 1
-			;			 :board ["X" 1 "X" "O" 4 5 6 7 8]
-			;			 :current-player :player2
-			;			 :player2 {:type :computer :piece "O" :player-num 2}
-			;			 :player1 {:type :human :piece " X " :player-num 1}
-			;			 :winner nil)
-			(let [request (assoc helper/request-map "resource" "/ttt/playing/box=0")
-						response (walk/keywordize-keys (responder/create-response-map request))
-						game (manager/manage-game request)
-						target (slurp (.getCanonicalPath (io/file "./tictactoe/ttt.html")))]
+			(reset! helper/mock-move 1)
+			(reset! helper/games {-3141 (assoc helper/default-game :status :playing :current-player :player2 :board ["X" 1 "X" "O" 4 5 6 7 8])})
+			(let [request-for-play {:responder :playing :Cookie (merge helper/default-game (assoc helper/default-cookie :status :playing))}
+						game (manager/manage-game request-for-play)]
 				(should= ["X" "O" "X" "O" 4 5 6 7 8] (:board game))
 				(should-not= :game-over (:status game))
-				(should-be-nil (:winner game))
-				;(should-contain target (slurp (:body response)))
-				(should-contain :re-route (keys response))))
+				(should-be-nil (:winner game))))
 		)
 	)
 

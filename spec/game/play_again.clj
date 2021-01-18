@@ -1,23 +1,15 @@
 (ns game.play-again
-	(:require [clojure.java.io :as io]
-						[clojure.walk :as walk]
-						[game.game-manager :as manager]
-						[responders.ttt-responder :as responder]
-						[speclj.core :refer :all]
+	(:require [game.game-manager :as manager]
 						[spec-helper :as helper]
-						[clojure.string :as str]))
+						[speclj.core :refer :all]))
 
 (describe "Play Again Response"
-	;(before (reset! manager/game helper/default-game))
 
 	(context "play-again?"
-			(it "no thanks"
-				(let [request (assoc helper/request-map "resource" "/ttt/play-again")
-							response (walk/keywordize-keys (responder/create-response-map request))
-							target (slurp (.getCanonicalPath (io/file "./tictactoe/user-setup.html")))
-							game (manager/manage-game request)]
-					(should= :user-setup (:status game))
-					;(should-contain target (slurp (:body response)))
-					(should-contain :re-route (keys response))))
+			(it "yes please!"
+				(let [request-for-play {:responder :play-again
+																:Cookie (assoc helper/default-cookie :status :play-again)}
+							game (manager/manage-game request-for-play)]
+					(should= :user-setup (:status game))))
 		)
 	)

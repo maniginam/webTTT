@@ -2,7 +2,8 @@
 	(:require [clojure.java.io :as io]
 						[clojure.string :as str]
 						[game.game-manager :as manager]
-						[clj-http.client :as client])
+						[clj-http.client :as client]
+						[clojure.walk :as walk])
 	(:import (server Responder)))
 
 (def root (atom (str (.getCanonicalPath (io/file "./tictactoe")))))
@@ -29,8 +30,7 @@
 
 (defn eat-cookies [request]
 	(when (.contains (keys request) :Cookie)
-		(let [cookie (str/split (nth (str/split (:Cookie request) #"\; ") 2) #"=")]
-			(Integer/parseInt (last cookie)))))
+		(walk/keywordize-keys (:Cookie request))))
 
 (defn parse-request-for-game [request]
 	(let [crude-resource (:resource request)
@@ -46,24 +46,22 @@
 
 (defn send-request-to-game [request]
 	(let [game (manager/manage-game request)]
-		(assoc request :gameID (:gameID game) :resource (get file-map (:status game)))))
+		(assoc request :resource (get file-map (:status game)) :cookie {:gameID (:gameID game) :users (:users game) :player1 (:player1 game) :player2 (:player2 game) :level (:level game) :board-size (:board-size game)})))
 
 (defn prep-for-game [request]
-	(println "request: " request)
 	(if (home? (:resource request))
 		(assoc request :resource "/index.html")
 		(send-request-to-game (parse-request-for-game request))))
 
 (defn set-new-request-for-reroute [request]
 	(let [resource (:resource request)
-				cookie (when (.contains (keys request) :gameID) (str "snickerdoodle=" (:gameID request)))
 				new-request-map {"re-route"    "true"
 										 "method"      "GET"
 										 "resource"    resource
 										 "Host"        (get request :Host)
 										 "httpVersion" "HTTP/1.1"}]
-		(if (not (nil? cookie))
-			(assoc new-request-map "cookie" cookie)
+		(if (not (nil? (:cookie request)))
+			(assoc new-request-map "cookie" (:cookie request))
 			new-request-map)))
 
 (defn create-response-map [request]
