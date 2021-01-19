@@ -51,9 +51,9 @@
 			(continue-last-game! (assoc (:last-game game) :console :web)))))
 
 (defn new-status-based-on-users [game users]
-	(cond (zero? users) (assoc game :status :level-setup :player1 {:playerNum 1 :piece "X" :type :computer} :player2 {:playerNum 2 :piece "O" :type :computer})
-				(= 1 users) (assoc game :status :player-setup)
-				(= 2 users) (assoc game :status :board-setup :player1 {:playerNum 1 :piece "X" :type :human} :player2 {:playerNum 2 :piece "O" :type :human})))
+	(cond (zero? users) (assoc game :status :level-setup :users 0 :player1 {:playerNum 1 :piece "X" :type :computer} :player2 {:playerNum 2 :piece "O" :type :computer})
+				(= 1 users) (assoc game :status :player-setup :users 1)
+				(= 2 users) (assoc game :status :board-setup :users 2 :player1 {:playerNum 1 :piece "X" :type :human} :player2 {:playerNum 2 :piece "O" :type :human})))
 
 (defmethod tcore/set-parameters :user-setup [game]
 	(if (= "setup" (:entry game))
