@@ -1,9 +1,8 @@
 (ns responders.ttt-responder
-	(:require [clojure.java.io :as io]
+	(:require [clj-time.core :as time]
+						[clojure.java.io :as io]
 						[clojure.string :as str]
-						[game.game-manager :as manager]
-						[clj-http.client :as client]
-						[clojure.walk :as walk])
+						[game.game-manager :as manager])
 	(:import (server Responder)))
 
 (def root (atom (str (.getCanonicalPath (io/file "./tictactoe")))))
@@ -25,12 +24,18 @@
 (defn extract-game-entry [request]
 	(let [entries (mapcat #(str/split % #"=") (mapcat #(str/split % #"&") (str/split (str (last (:target request))) #"\?")))
 				key (if (= 2 (count entries)) (keyword (first entries)) (keyword (second entries)))
-				entry-map (assoc {} key (last entries))]
-		entry-map))
+				]
+		(last entries)))
+;		entry-map (assoc {} key (last entries))]
+;entry-map))
 
 (defn eat-cookies [request]
 	(when (.contains (keys request) :Cookie)
-		(walk/keywordize-keys (:Cookie request))))
+		(let [maybe-cookies (str/split (:Cookie request) #"; ")
+					cookies (if (< 1 (count maybe-cookies)) (map #(clojure.edn/read-string %) maybe-cookies))
+					]
+			(println "EAT COOKIES: " (first cookies))
+			(first (remove #(= "null" %) cookies)))))
 
 (defn parse-request-for-game [request]
 	(let [crude-resource (:resource request)
@@ -39,38 +44,48 @@
 			(let [target (rest split-resource)
 						type (keyword (first (str/split (first target) #"\?")))
 						request (assoc request :responder type :target target)]
-				(assoc request :entry (extract-game-entry request) :cookie (eat-cookies request))))))
+				(assoc request :entry (extract-game-entry request) :Cookie (eat-cookies request))))))
 
 (defn home? [resource]
 	(or (nil? resource) (= "/ttt" resource)))
 
+
+(defn bake-cookie [game gameID]
+	(println "(:player1 game): " (:player1 game))
+	{:gameID  (if (nil? gameID) (:gameID game) gameID)
+	 :status  (:status game)
+	 :users   (:users game)
+	 :player1 (:player1 game) :player2 (:player2 game)
+	 :level   (:level game) :board-size (:board-size game)})
+
 (defn send-request-to-game [request]
 	(let [game (manager/manage-game request)]
+		(println "(:status game): " (:status game))
 		(assoc request :resource (get file-map (:status game))
-									 :cookie {:gameID (:gameID game) :users (:users game)
-														:player1 (:player1 game) :player2 (:player2 game)
-														:level (:level game) :board-size (:board-size game)})))
+									 :Cookie game
+									 :game game)))
 
 (defn prep-for-game [request]
 	(if (home? (:resource request))
-		(assoc request :resource "/index.html")
+		(assoc request :resource "/index.html" :Cookie (bake-cookie {:status :waiting} 0))
 		(send-request-to-game (parse-request-for-game request))))
 
 (defn set-new-request-for-reroute [request]
 	(let [resource (:resource request)
-				new-request-map {"re-route"    "true"
-										 "method"      "GET"
-										 "resource"    resource
-										 "Host"        (get request :Host)
-										 "httpVersion" "HTTP/1.1"}]
-		(if (not (nil? (:cookie request)))
-			(assoc new-request-map "cookie" (:cookie request))
-			new-request-map)))
+				cookie (:Cookie request)
+				new-request-map {"statusCode"  (int 302)
+												 "method"      "GET"
+												 "Location"    resource
+												 "resource"    resource
+												 "Host"        (get request :Host)
+												 "httpVersion" "HTTP/1.1"
+												 "Set-Cookie"  (bake-cookie (:game request) (get (:game request) :gameID))}]
+		new-request-map))
 
 (defn create-response-map [request]
 	(let [request-map (expand-java-map request)
 				request-with-game (prep-for-game request-map)
-		new-request (set-new-request-for-reroute request-with-game)]
+				new-request (set-new-request-for-reroute request-with-game)]
 		new-request))
 
 (deftype TTTResponder []

@@ -45,34 +45,36 @@
 	game)
 
 (defmethod tcore/set-parameters :restart? [game]
-	(let [play-last-game? (:continue (get game :entry))]
+	(let [play-last-game? (get game :entry)]
 		(if (= play-last-game? "no")
 			(save-status (assoc game :status :user-setup))
 			(continue-last-game! (assoc (:last-game game) :console :web)))))
 
-(defn new-status-based-on-users [users]
-	(cond (zero? users) :level-setup
-				(= 1 users) :player-setup
-				(= 2 users) :board-setup))
+(defn new-status-based-on-users [game users]
+	(cond (zero? users) (assoc game :status :level-setup :player1 {:playerNum 1 :piece "X" :type :computer} :player2 {:playerNum 2 :piece "O" :type :computer})
+				(= 1 users) (assoc game :status :player-setup)
+				(= 2 users) (assoc game :status :board-setup :player1 {:playerNum 1 :piece "X" :type :human} :player2 {:playerNum 2 :piece "O" :type :human})))
 
 (defmethod tcore/set-parameters :user-setup [game]
-	(let [users (Integer/parseInt (:users (get game :entry)))
-				status (new-status-based-on-users users)]
-		(assoc game :status status :users users)))
+	(if (= "setup" (:entry game))
+				 game
+	(let [users (Integer/parseInt (get game :entry))
+				updated-game (new-status-based-on-users game users)]
+		(save-status updated-game))))
 
 (defmethod tcore/set-parameters :player-setup [game]
-	(let [human (:piece (get game :entry))
+	(let [human (get game :entry)
 				player1 (if (= "X" human) {:playerNum 1 :piece "X" :type :human} {:playerNum 1 :piece "X" :type :computer})
 				player2 (if (= "O" human) {:playerNum 2 :piece "O" :type :human} {:playerNum 2 :piece "O" :type :computer})
 				updated-game (assoc game :status :level-setup :player1 player1 :player2 player2)]
 		(save-status updated-game)))
 
 (defmethod tcore/set-parameters :level-setup [game]
-	(let [level (:level (get game :entry))]
+	(let [level (get game :entry)]
 		(save-status (assoc game :level (keyword level) :status :board-setup))))
 
 (defmethod tcore/set-parameters :board-setup [game]
-	(let [board-size (Integer/parseInt (:board-size (get game :entry)))
+	(let [board-size (Integer/parseInt (get game :entry))
 				board (board/create-board board-size)]
 		(save-status (assoc game :board-size board-size :board board :status :ready-to-play))))
 
@@ -90,8 +92,9 @@
 ;	game-with-next-round))))))
 
 (defn maybe-start! [game]
+	(println "game: " game)
 	(if (= :ready-to-play (:status game))
-		(let [ready-game (assoc (merge default-game game) :status :playing)]
+		(let [ready-game (assoc (merge default-game game) :status :playing :last-game {:status :game-over :board ["X"]})]
 			(game/update-state ready-game))
 		game))
 
@@ -112,6 +115,7 @@
 (defn manage-game [request]
 	(let [entry (:entry request)
 				current-state-game (get-state-of-game request)]
+		(println "MANAGER (:status current-state-game): " (:status current-state-game))
 		(cond (= :setup (:responder request)) (setup-game current-state-game entry)
 					(= :playing (:responder request)) (play-turn current-state-game entry)
 					(= :play-again (:responder request)) (assoc default-game :status :user-setup)
