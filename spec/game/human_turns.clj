@@ -10,11 +10,12 @@
 			(reset! helper/mock-move 0)
 			(reset! helper/games
 							{-3141 (assoc helper/default-game
-											 :status :playing :current-player :player1
+								:gameID -3141
+								:status :playing :current-player :player1
 											 :board [0 1 2 3 4 5 6 7 8]
 											 :player1 {:type :human :piece "X" :player-num 1}
 											 :player2 {:player-num 2 :piece "O" :type :mock})})
-			(let [request-for-play {:entry {:box "4"} :responder :playing :Cookie (merge helper/default-game (assoc helper/default-cookie :status :playing :gameID -3141 :player1 {:player-num 1 :piece "X" :type :human} :player2 {:player-num 2 :piece "O" :type :mock}))}
+			(let [request-for-play {:entry "4" :responder :playing :Cookie (merge helper/default-game (assoc helper/default-cookie :status :playing :gameID -3141 :player1 {:player-num 1 :piece "X" :type :human} :player2 {:player-num 2 :piece "O" :type :mock}))}
 						game (manager/manage-game request-for-play)]
 				(should= :player1 (:current-player game))
 				(should= "X" (nth (:board game) 4))
@@ -29,7 +30,7 @@
 											 :board ["X" "X" 2 3 4 5 6 7 8]
 											 :player1 {:type :human :piece "X" :player-num 1}
 											 :player2 {:player-num 2 :piece "O" :type :mock})})
-			(let [request-for-play {:entry  {:box "2"} :responder :playing
+			(let [request-for-play {:entry "2" :responder :playing
 															:Cookie (merge helper/default-game (assoc helper/default-cookie :status :playing :gameID -3141 :player1 {:player-num 1 :piece "X" :type :human} :player2 {:player-num 2 :piece "O" :type :mock}))}
 						game (manager/manage-game request-for-play)]
 				(should= 1 (:winner game))
