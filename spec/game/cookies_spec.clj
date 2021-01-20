@@ -16,6 +16,12 @@
 
 (describe "Cookies"
 
+	(it "finds correct cookie"
+		(let [cookies "null; {:status :waiting, :gameID 0}; {:status :playing, :gameID 1}"
+					request {:method "GET" :Cookie cookies}]
+			(should= {:status :playing :gameID 1} (responder/eat-cookies request))
+			))
+
 (it "initiates game at waiting"
 		(let [request (assoc helper/request-map "resource" "/ttt/setup")
 					response (walk/keywordize-keys (responder/create-response-map request))]

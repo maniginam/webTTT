@@ -46,6 +46,8 @@
 			(let [request {:entry "0" :responder :setup :Cookie (assoc helper/default-cookie :status :user-setup :gameID -3141)}
 						game (manager/manage-game request)]
 				(should= :level-setup (:status game))
+				(should= :computer (get (:player1 game) :type))
+				(should= :computer (get (:player2 game) :type))
 				(should= 0 (:users game))))
 
 		(it "1 humans"
@@ -57,6 +59,8 @@
 		(it "2 humans"
 			(let [request {:entry "2" :responder :setup :Cookie (assoc helper/default-cookie :status :user-setup :gameID -3141)}
 						game (manager/manage-game request)]
+				(should= :human (get (:player1 game) :type))
+				(should= :human (get (:player2 game) :type))
 				(should= :board-setup (:status game))
 				(should= 2 (:users game))))
 		)

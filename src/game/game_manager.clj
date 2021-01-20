@@ -81,7 +81,7 @@
 (defn play-turn [game entry]
 	(if (game/ai-turn? game)
 		(game/update-state game)
-		(let [box (Integer/parseInt (:box entry))]
+		(let [box (Integer/parseInt entry)]
 			(if (string? (nth (:board game) box))
 				game
 				;(let [game-with-next-round
@@ -92,10 +92,13 @@
 ;	game-with-next-round))))))
 
 (defn maybe-start! [game]
-	(println "game: " game)
 	(if (= :ready-to-play (:status game))
 		(let [ready-game (assoc (merge default-game game) :status :playing :last-game {:status :game-over :board ["X"]})]
-			(game/update-state ready-game))
+			(println "ready-game: " ready-game)
+			(let [game (game/update-state ready-game)]
+				(tcore/draw-state game)
+				(println "game: " game)
+				game))
 		game))
 
 (defn setup-game [game entry]
@@ -115,7 +118,6 @@
 (defn manage-game [request]
 	(let [entry (:entry request)
 				current-state-game (get-state-of-game request)]
-		(println "MANAGER (:status current-state-game): " (:status current-state-game))
 		(cond (= :setup (:responder request)) (setup-game current-state-game entry)
 					(= :playing (:responder request)) (play-turn current-state-game entry)
 					(= :play-again (:responder request)) (assoc default-game :status :user-setup)

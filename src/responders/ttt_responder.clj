@@ -34,8 +34,10 @@
 		(let [maybe-cookies (str/split (:Cookie request) #"; ")
 					cookies (if (< 1 (count maybe-cookies)) (map #(clojure.edn/read-string %) maybe-cookies))
 					]
-			(println "EAT COOKIES: " (first cookies))
-			(first (remove #(= "null" %) cookies)))))
+			(let [after-nils (remove #(nil? %) cookies)
+						max-gameID (if (zero? (count after-nils)) 0 (apply max (remove #(nil? %) (for [cookie cookies] (:gameID cookie)))))
+						cookie-game (if (zero? (count after-nils)) nil (first (filter #(= max-gameID (:gameID %)) (remove #(nil? %) cookies))))]
+				cookie-game))))
 
 (defn parse-request-for-game [request]
 	(let [crude-resource (:resource request)
