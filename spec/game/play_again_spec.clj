@@ -1,4 +1,4 @@
-(ns game.play-again
+(ns game.play-again-spec
 	(:require [game.game-manager :as manager]
 						[spec-helper :as helper]
 						[speclj.core :refer :all]))

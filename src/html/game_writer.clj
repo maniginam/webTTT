@@ -18,7 +18,10 @@
 				min-margin (* box-size 0.2)
 				max-margin (* box-size 0.8)
 				color (:color specs)
-				points {:x1 (+ x min-margin) :x2 (+ x max-margin) :y1 (+ y min-margin) :y2 (+ y max-margin)}]
+				center (/ box-size 2)
+				length (apply min [(- (+ x max-margin) (+ x min-margin)) (- (+ y max-margin) (+ y min-margin))])
+				radius (/ length 2)
+				points {:x1 (+ x (- center radius)) :x2 (+ x (+ center radius)) :y1 (+ y (- center radius)) :y2 (+ y (+ center radius))}]
 		(str "<line x1=\"" (:x1 points) "%\" y1=\"" (:y1 points) "%\" x2=\"" (:x2 points) "%\" y2=\"" (:y2 points) "%\" stroke=\"" color "\" stroke-width=\"" x-width "\" stroke-linecap=\"round\"/>\n"
 				 "<line x1=\"" (:x2 points) "%\" y1=\"" (:y1 points) "%\" x2=\"" (:x1 points) "%\" y2=\"" (:y2 points) "%\" stroke=\"" color "\" stroke-width=\"" x-width "\" stroke-linecap=\"round\"/>\n")))
 
@@ -66,7 +69,7 @@
 
 (defn draw-board [game]
 	(let [board (:board game)
-				boxes-per-row (int (Math/sqrt (count board)))
+				boxes-per-row (:board-size game)
 				box-size (float (/ 90 boxes-per-row))
 				min (float 5)
 				winning-boxes (vec (:winning-line game))

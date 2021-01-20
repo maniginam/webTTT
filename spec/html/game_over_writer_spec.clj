@@ -15,7 +15,7 @@
 
 	(context "winner:"
 		(it "cat's game"
-			(hcore/write! {:status :game-over :board ["X" "O" "X" "X" "O" "O" "O" "X" "X"] :winner 0})
+			(hcore/write! {:status :game-over :board-size 3 :board ["X" "O" "X" "X" "O" "O" "O" "X" "X"] :winner 0})
 			(let [ttt (.getCanonicalPath (io/file "./tictactoe/game-over.html"))
 						html (slurp ttt)
 						lines (str/split-lines html)]
@@ -27,7 +27,7 @@
 				(should-contain "<rect x=\"5.0%\" y=\"5.0%\" width=\"30.0%\" height=\"30.0%\" fill=\"blue\" opacity=\"10%\"/>", lines)))
 
 		(it "x wins"
-			(hcore/write! {:status :game-over :board ["X" "X" "X" "X" "O" "O" "O" "X" "X"] :winner 1})
+			(hcore/write! {:status :game-over :board-size 3 :board ["X" "X" "X" "X" "O" "O" "O" "X" "X"] :winner 1})
 			(let [ttt (.getCanonicalPath (io/file "./tictactoe/game-over.html"))
 						html (slurp ttt)
 						lines (str/split-lines html)]
@@ -39,7 +39,7 @@
 				(should-contain "<rect x=\"5.0%\" y=\"5.0%\" width=\"30.0%\" height=\"30.0%\" fill=\"blue\" opacity=\"10%\"/>", lines)))
 
 		(it "o wins"
-			(hcore/write! {:status :game-over :board ["X" "O" "X" "X" "O" "O" "O" "O" "X"] :winner 2 :winning-line [1 4 7]})
+			(hcore/write! {:status :game-over :board-size 3 :board ["X" "O" "X" "X" "O" "O" "O" "O" "X"] :winner 2 :winning-line [1 4 7]})
 			(let [ttt (.getCanonicalPath (io/file "./tictactoe/game-over.html"))
 						html (slurp ttt)
 						lines (str/split-lines html)]

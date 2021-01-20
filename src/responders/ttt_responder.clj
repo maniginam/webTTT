@@ -26,18 +26,31 @@
 				key (if (= 2 (count entries)) (keyword (first entries)) (keyword (second entries)))
 				]
 		(last entries)))
-;		entry-map (assoc {} key (last entries))]
-;entry-map))
 
 (defn eat-cookies [request]
 	(when (.contains (keys request) :Cookie)
-		(let [maybe-cookies (str/split (:Cookie request) #"; ")
-					cookies (if (< 1 (count maybe-cookies)) (map #(clojure.edn/read-string %) maybe-cookies))
-					]
-			(let [after-nils (remove #(nil? %) cookies)
-						max-gameID (if (zero? (count after-nils)) 0 (apply max (remove #(nil? %) (for [cookie cookies] (:gameID cookie)))))
-						cookie-game (if (zero? (count after-nils)) nil (first (filter #(= max-gameID (:gameID %)) (remove #(nil? %) cookies))))]
-				cookie-game))))
+		(let [maybe-cookies (remove #(or (= "null" %) (nil? %)) (str/split (:Cookie request) #"; "))
+					cookies (if (> (count maybe-cookies) 0) (map #(clojure.edn/read-string %) maybe-cookies))
+					cookie-games (remove #(nil? (:cookieID %)) cookies)
+					gameIDs (for [cookie cookie-games] (if (not (nil? (:cookieID cookie))) (:cookieID cookie) -1))
+					max-gameID (if (empty? gameIDs) nil (apply max gameIDs))
+					cookie-game (if (nil? max-gameID) nil (first (filter #(= max-gameID (:cookieID %)) cookie-games)))]
+			cookie-game)))
+
+(defn bake-cookie [game]
+	{:cookieID 	(:cookieID game)
+	 :gameID    (:gameID game)
+	 :status    (:status game)
+	 :users     (:users game)
+	 :player1   (:player1 game) :player2 (:player2 game)
+	 :level     (:level game) :board-size (:board-size game)
+	 :last-game (:last-game game)})
+
+(defn send-request-to-game [request]
+	(let [game (manager/manage-game request)]
+		(assoc request :resource (get file-map (:status game))
+									 :Cookie game
+									 :game game)))
 
 (defn parse-request-for-game [request]
 	(let [crude-resource (:resource request)
@@ -51,37 +64,20 @@
 (defn home? [resource]
 	(or (nil? resource) (= "/ttt" resource)))
 
-
-(defn bake-cookie [game gameID]
-	(println "(:player1 game): " (:player1 game))
-	{:gameID  (if (nil? gameID) (:gameID game) gameID)
-	 :status  (:status game)
-	 :users   (:users game)
-	 :player1 (:player1 game) :player2 (:player2 game)
-	 :level   (:level game) :board-size (:board-size game)})
-
-(defn send-request-to-game [request]
-	(let [game (manager/manage-game request)]
-		(println "(:status game): " (:status game))
-		(assoc request :resource (get file-map (:status game))
-									 :Cookie game
-									 :game game)))
-
 (defn prep-for-game [request]
 	(if (home? (:resource request))
-		(assoc request :resource "/index.html" :Cookie (bake-cookie {:status :waiting} 0))
+		(assoc request :resource "/index.html" :Cookie (bake-cookie {:status :waiting :cookieID -1}))
 		(send-request-to-game (parse-request-for-game request))))
 
 (defn set-new-request-for-reroute [request]
 	(let [resource (:resource request)
-				cookie (:Cookie request)
 				new-request-map {"statusCode"  (int 302)
 												 "method"      "GET"
 												 "Location"    resource
 												 "resource"    resource
 												 "Host"        (get request :Host)
 												 "httpVersion" "HTTP/1.1"
-												 "Set-Cookie"  (bake-cookie (:game request) (get (:game request) :gameID))}]
+												 "Set-Cookie"  (bake-cookie (:game request))}]
 		new-request-map))
 
 (defn create-response-map [request]

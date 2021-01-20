@@ -1,7 +1,6 @@
 (ns server.starter_spec
 	(:require [clj-http.client :as client]
 						[clojure.java.io :as io]
-						[game.game-manager :as manager]
 						[server.starter :as starter]
 						[spec-helper :as helper]
 						[speclj.core :refer :all]))

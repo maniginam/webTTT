@@ -17,7 +17,7 @@
 	(context "On the Console:"
 		(context "draws standard board"
 			(it "that is blank"
-				(std/write! {:status :playing :board [0 1 2 3 4 5 6 7 8]})
+				(std/write! {:status :playing :board-size 3 :board [0 1 2 3 4 5 6 7 8]})
 				(let [ttt (.getCanonicalPath (io/file "./tictactoe/ttt.html"))
 							html (slurp ttt)
 							lines (str/split-lines html)]
@@ -27,7 +27,7 @@
 					(should-contain "<rect x=\"5.0%\" y=\"5.0%\" width=\"30.0%\" height=\"30.0%\" fill=\"blue\" opacity=\"10%\"/>", lines)))
 
 			(it "with 1 X"
-				(std/write! {:status :playing :board [0 1 2 3 "X" 5 6 7 8] :current-player :player2 :player2 {:piece "O"}})
+				(std/write! {:status :playing :board-size 3 :board [0 1 2 3 "X" 5 6 7 8] :current-player :player2 :player2 {:piece "O"}})
 				(let [ttt (.getCanonicalPath (io/file "./tictactoe/ttt.html"))
 							html (slurp ttt)
 							lines (str/split-lines html)]
@@ -40,7 +40,7 @@
 
 		(context "draws board of size"
 			(it "2x2"
-				(std/write! {:status :playing :board [0 1 2 3]})
+				(std/write! {:status :playing :board-size 2 :board [0 1 2 3]})
 				(let [ttt (.getCanonicalPath (io/file "./tictactoe/ttt.html"))
 							html (slurp ttt)
 							lines (str/split-lines html)]
@@ -50,7 +50,7 @@
 					(should-contain "<rect x=\"5.0%\" y=\"5.0%\" width=\"45.0%\" height=\"45.0%\" fill=\"blue\" opacity=\"10%\"/>", lines)))
 
 			(it "4x4"
-				(std/write! {:status :playing :board [0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15]})
+				(std/write! {:status :playing :board-size 4 :board [0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15]})
 				(let [ttt (.getCanonicalPath (io/file "./tictactoe/ttt.html"))
 							html (slurp ttt)
 							lines (str/split-lines html)]
