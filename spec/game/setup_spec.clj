@@ -105,7 +105,6 @@
 			(reset! helper/games {})
 			(let [request {:entry "2" :responder :setup :Cookie (dissoc (assoc helper/default-cookie :status :board-setup :cookieID -3141) :board-size)}
 						game (manager/manage-game request)]
-				(println "(:gameID game): " (:gameID game))
 				(should= :playing (get game :status))
 				(should= [0 1 2 3] (get game :board))
 				(should= 1 (:cookieID game))

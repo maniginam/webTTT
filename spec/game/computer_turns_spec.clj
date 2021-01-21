@@ -6,15 +6,15 @@
 (describe "Computer"
 
 	(context "plays"
-		(xit
+
 			(it "round 1 of game"
 			(reset! helper/mock-move 0)
 			(reset! helper/games {-3141 (assoc helper/default-game :status :playing :board [0 1 2 3 4 5 6 7 8])})
-			(let [ready-game (merge helper/default-game (assoc helper/default-cookie :status :ready-to-play))
-						game (manager/maybe-start! ready-game)]
+			(let [ready-game (assoc helper/default-game :cookieID -3141 :status :ready-to-play :board [0 1 2 3 4 5 6 7 8])
+						game (manager/maybe-play! ready-game)]
 				(should= :playing (:status game))
 				(should= :player2 (:current-player game))
-				(should= 1 (count (filter #(= "X" %) (:board game)))))))
+				(should= 1 (count (filter #(= "X" %) (:board game))))))
 
 		(it "vs computer for cat's game"
 			(reset! helper/mock-move 1)

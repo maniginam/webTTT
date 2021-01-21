@@ -22,7 +22,7 @@
 
 (defn bake-cookieID []
 	(let [now (time/now)]
-		(float (apply + [(* (time/hour now) 60) (time/minute now) (/ (time/second now) 60)]))))
+		(float (apply + [(time/year now) (time/month now) (time/day now) (* (time/hour now) 60) (time/minute now) (/ (time/second now) 60)]))))
 
 (defn save-status [game]
 	(let [updated-game (assoc game :status (:status game)
@@ -49,7 +49,7 @@
 	;; TODO - GLM : MAYBE UPDATE GAME
 	(let [continued-game (assoc (merge default-game (:last-game game)) :status :playing)]
 		(tcore/draw-state continued-game)
-	(assoc continued-game :cookieID (+ (:cookieID game) 1))))
+	(assoc continued-game :cookieID (inc (:cookieID game)))))
 
 (defmethod tcore/set-parameters :restart? [game]
 	(let [play-last-game? (get game :entry)]
@@ -102,17 +102,17 @@
 ;	(game/update-state game-with-next-round)
 ;	game-with-next-round))))))
 
-(defn maybe-start! [game]
+(defn maybe-play! [game]
 	(if (= :ready-to-play (:status game))
 		(let [ready-game (merge default-game game)
 					updated-game (game/update-state ready-game)]
 			(tcore/draw-state updated-game)
-			(assoc updated-game :cookieID (bake-cookieID)))
-		(assoc game :cookieID (bake-cookieID))))
+			(assoc updated-game :cookieID (inc (:cookieID game))))
+		(assoc game :cookieID (inc (:cookieID game)))))
 
 (defn setup-game [game entry]
 	(let [game-in-new-phase (tcore/set-parameters (assoc game :entry entry))]
-		(maybe-start! game-in-new-phase)))
+		(maybe-play! game-in-new-phase)))
 
 (defn load-game-by-id [request]
 	(let [game (tcore/load-game (merge default-game (:Cookie request)))]
@@ -125,13 +125,11 @@
 				:else (:Cookie request)))
 
 (defn manage-game [request]
-	(println "MANAGER request: " request)
 	(let [entry (:entry request)
 				current-state-game (if (= "setup" entry) (get-state-of-game default-game) (get-state-of-game request))]
-		(println "current-state-game: " current-state-game)
 		(cond (= :setup (:responder request)) (setup-game current-state-game entry)
 					(= :playing (:responder request)) (play-turn current-state-game entry)
-					(= :play-again (:responder request)) (assoc default-game :status :user-setup)
+					(= :play-again (:responder request)) (assoc current-state-game :status :user-setup)
 					:else default-game)))
 
 
